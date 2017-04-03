@@ -4,6 +4,7 @@ import * as nconf from 'nconf';
 import { OAuthModel } from './model';
 import * as tenants from './tenants';
 import * as clients from './clients';
+import * as users from './users';
 import * as MongoOAuthPersistenceFactory from './persistence/mongo/index';
 
 
@@ -30,6 +31,7 @@ export async function start() {
 
     tenants.configure(app, persistence.tenants);
     clients.configure(app, persistence.clients);
+    users.configure(app, persistence.users);
      
     app.use((req, res, next) => {
         res.status(404);

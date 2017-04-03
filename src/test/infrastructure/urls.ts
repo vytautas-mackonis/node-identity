@@ -17,3 +17,12 @@ export function clients() {
 export function client(id: string) {
     return `clients/${id}`;
 }
+
+export function users() {
+    return 'users';
+}
+
+export function user(id: string, tenantId?: string) {
+    let query = tenantId ? '?tenantId=' + tenantId : '';
+    return `users/${id}${query}`;
+}
