@@ -1,0 +1,9 @@
+{
+    "rootDir": "src",
+    "include": [
+        "src/**/*"
+    ],
+    "compilerOptions": {
+        "lib": [ "ES2015" ]
+    }
+}
