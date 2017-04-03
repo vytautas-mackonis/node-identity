@@ -58,7 +58,7 @@ class MongoTenantService implements persistence.TenantService {
     }
 
     public async delete(id: string) : Promise<void> {
-        return null;
+        await this.tenants.remove({ _id: id });
     }
 }
 

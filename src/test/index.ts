@@ -6,7 +6,3 @@ let db: Db;
 before(async () => {
     await api.start();
 });
-
-beforeEach(async () => {
-    await api.dropDatabase();
-});
