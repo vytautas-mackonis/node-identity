@@ -3,7 +3,8 @@ import * as bodyParser from 'body-parser';
 import * as nconf from 'nconf';
 import { OAuthModel } from './model';
 import * as tenants from './tenants';
-import * as MongoOAuthPersistenceFactory from './mongoPersistence';
+import * as clients from './clients';
+import * as MongoOAuthPersistenceFactory from './persistence/mongo/index';
 
 
 export async function start() {
@@ -28,6 +29,7 @@ export async function start() {
     app.use('/token', oauth.token());
 
     tenants.configure(app, persistence.tenants);
+    clients.configure(app, persistence.clients);
      
     app.use((req, res, next) => {
         res.status(404);

@@ -1,8 +1,8 @@
-import * as persistence from './persistence';
+import * as persistence from '../../persistence';
 import * as maybe from 'data.maybe';
 import * as _ from 'lodash';
 
-import { MongoClient, Db, Collection } from 'mongodb';
+import { Db, Collection } from 'mongodb';
 
 interface TenantDocument {
     _id: string;
@@ -23,7 +23,7 @@ function tenantFromDocument(tenant: TenantDocument): persistence.Tenant {
     };
 }
 
-class MongoTenantService implements persistence.TenantService {
+export class MongoTenantService implements persistence.TenantService {
     private tenants: Collection;
     
     constructor(db: Db) {
@@ -62,9 +62,3 @@ class MongoTenantService implements persistence.TenantService {
     }
 }
 
-export async function create(dbUrl: string) {
-    let db = await MongoClient.connect(dbUrl);
-    return {
-        tenants: new MongoTenantService(db)
-    };
-}
