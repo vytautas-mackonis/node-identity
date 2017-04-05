@@ -3,6 +3,8 @@ import * as urls from './infrastructure/urls';
 import * as httpAssert from './infrastructure/httpAssert';
 import { expect } from 'chai';
 import * as uuid from 'node-uuid';
+import * as _ from 'lodash';
+import * as settings from './infrastructure/settings';
 
 interface User {
     id: string;
@@ -18,6 +20,7 @@ function assertUser(user: User) {
         let response = await http.getJson(urls.users());
         httpAssert.expectStatusCode(response, 200);
         let users = response.body;
+        _.remove(users, u => u.login === settings.defaultUsername);
         expect(users).to.eql([
             user
         ]);
@@ -31,106 +34,109 @@ function assertUser(user: User) {
     });
 }
 
-describe('After registering a user', () => {
-    const tenant = {
-        id: uuid.v4(),
-        name: uuid.v4()
-    };
+describe('User registration', () => {
+    describe('After registering a user', () => {
+        const tenant = {
+            id: uuid.v4(),
+            name: uuid.v4()
+        };
 
-    const user = {
-        id: uuid.v4(),
-        tenantId: tenant.id,
-        login: uuid.v4(),
-        name: uuid.v4(),
-        email: uuid.v4() + '@' + uuid.v4() + '.com'
-    };
-
-    before(async () => {
-        await api.dropDatabase();
-        let http = await api.defaultAdminClient();
-        let response = await http.putJson(urls.tenant(tenant.id), tenant);
-        httpAssert.expectStatusCode(response, 201);
-        response = await http.putJson(urls.user(user.id), user);
-        httpAssert.expectStatusCode(response, 201);
-    });
-
-    assertUser(user);
-});
-
-describe('After registering and updating a user', () => {
-    const tenant = {
-        id: uuid.v4(),
-        name: uuid.v4()
-    };
-
-    const user = {
-        id: uuid.v4(),
-        tenantId: tenant.id,
-        login: uuid.v4(),
-        name: uuid.v4(),
-        email: uuid.v4() + '@' + uuid.v4() + '.com'
-    };
-
-    before(async () => {
-        await api.dropDatabase();
-        let http = await api.defaultAdminClient();
-        let response = await http.putJson(urls.tenant(tenant.id), tenant);
-        httpAssert.expectStatusCode(response, 201);
-        response = await http.putJson(urls.user(user.id), {
-            id: user.id,
-            tenantId: user.tenantId,
+        const user = {
+            id: uuid.v4(),
+            tenantId: tenant.id,
             login: uuid.v4(),
             name: uuid.v4(),
             email: uuid.v4() + '@' + uuid.v4() + '.com'
+        };
+
+        before(async () => {
+            await api.dropDatabase();
+            let http = await api.defaultAdminClient();
+            let response = await http.putJson(urls.tenant(tenant.id), tenant);
+            httpAssert.expectStatusCode(response, 201);
+            response = await http.putJson(urls.user(user.id), user);
+            httpAssert.expectStatusCode(response, 201);
         });
-        httpAssert.expectStatusCode(response, 201);
-        response = await http.putJson(urls.user(user.id), user);
-        httpAssert.expectStatusCode(response, 200);
+
+        assertUser(user);
     });
 
-    assertUser(user);
+    describe('After registering and updating a user', () => {
+        const tenant = {
+            id: uuid.v4(),
+            name: uuid.v4()
+        };
+
+        const user = {
+            id: uuid.v4(),
+            tenantId: tenant.id,
+            login: uuid.v4(),
+            name: uuid.v4(),
+            email: uuid.v4() + '@' + uuid.v4() + '.com'
+        };
+
+        before(async () => {
+            await api.dropDatabase();
+            let http = await api.defaultAdminClient();
+            let response = await http.putJson(urls.tenant(tenant.id), tenant);
+            httpAssert.expectStatusCode(response, 201);
+            response = await http.putJson(urls.user(user.id), {
+                id: user.id,
+                tenantId: user.tenantId,
+                login: uuid.v4(),
+                name: uuid.v4(),
+                email: uuid.v4() + '@' + uuid.v4() + '.com'
+            });
+            httpAssert.expectStatusCode(response, 201);
+            response = await http.putJson(urls.user(user.id), user);
+            httpAssert.expectStatusCode(response, 200);
+        });
+
+        assertUser(user);
+    });
+
+    describe('After registering two users and deleting one', () => {
+        const tenant = {
+            id: uuid.v4(),
+            name: uuid.v4()
+        };
+
+        const user = {
+            id: uuid.v4(),
+            tenantId: tenant.id,
+            login: uuid.v4(),
+            name: uuid.v4(),
+            email: uuid.v4() + '@' + uuid.v4() + '.com'
+        };
+
+        const deleted = {
+            id: uuid.v4(),
+            tenantId: tenant.id,
+            login: uuid.v4(),
+            name: uuid.v4(),
+            email: uuid.v4() + '@' + uuid.v4() + '.com'
+        };
+
+        before(async () => {
+            await api.dropDatabase();
+            let http = await api.defaultAdminClient();
+            let response = await http.putJson(urls.tenant(tenant.id), tenant);
+            httpAssert.expectStatusCode(response, 201);
+            response = await http.putJson(urls.user(user.id), user);
+            httpAssert.expectStatusCode(response, 201);
+            response = await http.putJson(urls.user(deleted.id), deleted);
+            httpAssert.expectStatusCode(response, 201);
+            response = await http.delete(urls.user(deleted.id, deleted.tenantId));
+            httpAssert.expectStatusCode(response, 200);
+        });
+
+        assertUser(user);
+        
+        it('Should not get deleted user by id using admin user', async () => {
+            let http = await api.defaultAdminClient();
+            let response = await http.getJson(urls.user(deleted.id, deleted.tenantId));
+            httpAssert.expectStatusCode(response, 404);
+        });
+    });
 });
 
-describe('After registering two users and deleting one', () => {
-    const tenant = {
-        id: uuid.v4(),
-        name: uuid.v4()
-    };
-
-    const user = {
-        id: uuid.v4(),
-        tenantId: tenant.id,
-        login: uuid.v4(),
-        name: uuid.v4(),
-        email: uuid.v4() + '@' + uuid.v4() + '.com'
-    };
-
-    const deleted = {
-        id: uuid.v4(),
-        tenantId: tenant.id,
-        login: uuid.v4(),
-        name: uuid.v4(),
-        email: uuid.v4() + '@' + uuid.v4() + '.com'
-    };
-
-    before(async () => {
-        await api.dropDatabase();
-        let http = await api.defaultAdminClient();
-        let response = await http.putJson(urls.tenant(tenant.id), tenant);
-        httpAssert.expectStatusCode(response, 201);
-        response = await http.putJson(urls.user(user.id), user);
-        httpAssert.expectStatusCode(response, 201);
-        response = await http.putJson(urls.user(deleted.id), deleted);
-        httpAssert.expectStatusCode(response, 201);
-        response = await http.delete(urls.user(deleted.id, deleted.tenantId));
-        httpAssert.expectStatusCode(response, 200);
-    });
-
-    assertUser(user);
-    
-    it('Should not get deleted user by id using admin user', async () => {
-        let http = await api.defaultAdminClient();
-        let response = await http.getJson(urls.user(deleted.id, deleted.tenantId));
-        httpAssert.expectStatusCode(response, 404);
-    });
-});

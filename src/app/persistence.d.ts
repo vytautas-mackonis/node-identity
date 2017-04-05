@@ -23,16 +23,15 @@ interface ClientSaveRequest {
     applicationType: string;
     name: string;
     refreshTokenLifetime: number;
-    secret: string;
+    secretHash: string;
     tenantId: string;
 }
 
-interface Client extends ClientSaveRequest {
+export interface Client extends ClientSaveRequest {
     id: string;
-    secretSalt: string;
 }
 
-interface ClientFilter {
+export interface ClientFilter {
     id?: string;
     tenantId?: string;
 }
@@ -45,17 +44,16 @@ export interface ClientService {
     delete(id: string): Promise<void>;
 }
 
-interface User {
+export interface User {
     id: string;
     tenantId: string;
     login: string;
     name: string;
     email: string;
     passwordHash: string;
-    passwordSalt: string;
 }
 
-interface UserFilter {
+export interface UserFilter {
     userId?: string;
     tenantId?: string;
     email?: string;
@@ -64,20 +62,25 @@ interface UserFilter {
     claimValue?: string;
 }
 
-interface UserService {
+export interface UserService {
     query(filter: UserFilter): Promise<User[]>;
     getById(tenantId: string, id: string): Promise<maybe.Maybe<User>>;
     getByEmail(tenantId: string, email: string): Promise<maybe.Maybe<User>>;
     getByEmailAndLogin(tenantId: string, email: string, login: string): Promise<maybe.Maybe<User>>;
-    getByLoginAndPassword(tenantId: string, login: string, passwordAttempt: string): Promise<maybe.Maybe<User>>;
+    getByLogin(tenantId: string, login: string): Promise<maybe.Maybe<User>>;
     getByPasswordResetToken(token: string): Promise<maybe.Maybe<User>>;
     save(tenantId: string, id: string, login: string, email: string, name: string): Promise<boolean>;
-    changePassword(tenantId: string, id: string, password: string): Promise<void>;
+    changePassword(tenantId: string, id: string, passwordHash: string): Promise<void>;
     delete(tenantId: string, id: string): Promise<void>;
+}
+
+export interface DatabaseInitializer {
+    initialize(): Promise<void>;
 }
 
 export interface OAuthPersistence {
     tenants: TenantService;
     clients: ClientService;
     users: UserService;
+    initializer: DatabaseInitializer;
 }

@@ -1,12 +1,12 @@
 import { Express } from 'express';
 import * as _ from 'lodash';
 import { ClientSaveRequest, ClientService, Client } from './persistence';
+import { HashAlgorithm } from './hashAlgorithm';
 
-export function configure(server: Express, repository: ClientService) {
+export function configure(server: Express, repository: ClientService, hashAlgorithm: HashAlgorithm) {
     function toRendition(client: Client) {
         let copy = Object.assign({}, client);
-        delete copy['secret'];
-        delete copy['secretSalt'];
+        delete copy['secretHash'];
         return copy;
     }
     
@@ -16,6 +16,8 @@ export function configure(server: Express, repository: ClientService) {
     }
 
     async function save(id: string, client: ClientSaveRequest) {
+        client.secretHash = await hashAlgorithm.computeHash(client['secret']);
+        delete client['secret'];
         return await repository.save(id, client);
     }
 

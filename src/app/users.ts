@@ -1,6 +1,7 @@
 import { Express } from 'express';
 import * as _ from 'lodash';
 import { UserService, User } from './persistence';
+import { HashAlgorithm } from './hashAlgorithm';
 
 interface UserRendition {
     id: string;
@@ -10,7 +11,7 @@ interface UserRendition {
     email: string;
 }
 
-export function configure(server: Express, repository: UserService) {
+export function configure(server: Express, repository: UserService, hashAlgorithm: HashAlgorithm) {
     function toRendition(user: User) {
         let copy = Object.assign({}, user);
         delete copy['passwordHash'];
@@ -34,6 +35,11 @@ export function configure(server: Express, repository: UserService) {
 
     async function remove(tenantId: string, id: string) {
         return await repository.delete(tenantId, id);
+    }
+
+    async function setPassword(tenantId: string, userId: string, password: string) {
+        const hash = await hashAlgorithm.computeHash(password);
+        await repository.changePassword(tenantId, userId, hash);
     }
 
     server.put('/users/:id', (request, response, next) => {
@@ -62,6 +68,12 @@ export function configure(server: Express, repository: UserService) {
 
     server.delete('/users/:id', (request, response, next) => {
         remove(request.query.tenantId, request.params.id)
+            .then(() => response.status(200).send())
+            .catch(next);
+    });
+
+    server.put('/users/:id/password', (request, response, next) => {
+        setPassword(request.query.tenantId, request.params.id, request.body.password)
             .then(() => response.status(200).send())
             .catch(next);
     });

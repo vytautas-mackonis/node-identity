@@ -9,11 +9,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "argon2": "^0.15.0",
     "body-parser": "^1.17.1",
     "data.maybe": "^1.2.2",
     "express": "^4.15.2",
     "express-oauth-server": "^2.0.0-b1",
     "jsonwebtoken": "^7.3.0",
+    "mongo-uuid": "0.0.4",
     "mongodb": "^2.2.25",
     "nconf": "^0.8.4",
     "node-uuid": "^1.4.8",

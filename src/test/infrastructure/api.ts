@@ -6,18 +6,20 @@ import * as urls from './urls';
 import * as settings from './settings';
 import { MongoClient, Db } from 'mongodb';
 
-nconf.file('testconfig', 'conf/config_test.json');
 
 let db: Db;
 
 export async function start() {
+    nconf.file('testconfig', 'conf/config_test.json');
     await server.start();
     const dbUrl = nconf.get('mongoDbUrl');
     db = await MongoClient.connect(dbUrl);
 }
 
 export async function dropDatabase() {
+    server.stop();
     await db.dropDatabase();
+    await server.start();
 }
 
 export function baseUrl() {

@@ -11,25 +11,9 @@ interface UserDocument {
     loginLowercase: string;
     name: string;
     email: string;
-    passwordHash: string;
-    passwordSalt: string;
+    passwordHash?: string;
     passwordResetToken: string;
-    version: number;
-}
-
-function toDocument(user: User): UserDocument {
-    return {
-        userId: user.id,
-        tenantId: user.tenantId,
-        login: user.login,
-        loginLowercase: user.login.toLowerCase(),
-        name: user.name,
-        email: user.email.toLowerCase(),
-        passwordHash: user.passwordHash,
-        passwordSalt: user.passwordSalt,
-        version: 0,
-        passwordResetToken: null
-    };
+    version?: number;
 }
 
 function fromDocument(user: UserDocument): User {
@@ -40,7 +24,6 @@ function fromDocument(user: UserDocument): User {
         name: user.name,
         email: user.email,
         passwordHash: user.passwordHash,
-        passwordSalt: user.passwordSalt
     };
 }
 
@@ -85,8 +68,8 @@ export class MongoUserService implements UserService {
         return arrayToMaybe(await this.query({ tenantId: tenantId, email: email, login: login }));
     }
 
-    public async getByLoginAndPassword(tenantId: string, login: string, passwordAttempt: string) {
-        return maybe.Nothing<User>();
+    public async getByLogin(tenantId: string, login: string) {
+        return arrayToMaybe(await this.query({ tenantId: tenantId, login: login }));
     }
 
     public async getByPasswordResetToken(token: string) {
@@ -94,21 +77,22 @@ export class MongoUserService implements UserService {
     }
 
     public async save(tenantId: string, id: string, login: string, email: string, name: string) {
-        let doc = {
+        let doc: UserDocument = {
             tenantId: tenantId,
             userId: id,
             login: login,
             loginLowercase: login.toLowerCase(),
             email: email.toLowerCase(),
-            name: name
+            name: name,
+            passwordResetToken: null
         };
 
-        let saveResult = await this.users.update({ tenantId: tenantId, userId: id }, doc, { upsert: true });
+        let saveResult = await this.users.update({ tenantId: tenantId, userId: id }, { $set: doc }, { upsert: true });
         return saveResult.result.upserted && saveResult.result.upserted.length > 0;
     }
 
-    public async changePassword(tenantId: string, id: string, password: string) {
-
+    public async changePassword(tenantId: string, id: string, passwordHash: string) {
+        await this.users.update({ tenantId: tenantId, userId: id }, { $set: { passwordHash: passwordHash } });
     }
 
     public async delete(tenantId: string, id: string) {

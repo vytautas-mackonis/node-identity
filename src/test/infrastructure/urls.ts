@@ -26,3 +26,7 @@ export function user(id: string, tenantId?: string) {
     let query = tenantId ? '?tenantId=' + tenantId : '';
     return `users/${id}${query}`;
 }
+
+export function userPassword(id: string, tenantId: string) {
+    return `users/${id}/password?tenantId=${tenantId}`;
+}

@@ -10,8 +10,7 @@ interface ClientDocument {
     applicationType: string;
     name: string;
     refreshTokenLifetime: number;
-    secret: string;
-    secretSalt: string;
+    secretHash: string;
     tenantId: string;
 }
 
@@ -23,8 +22,7 @@ function toDocument(id: string, client: ClientSaveRequest) : ClientDocument {
         applicationType: client.applicationType,
         name: client.name,
         refreshTokenLifetime: client.refreshTokenLifetime,
-        secret: client.secret,
-        secretSalt: '',
+        secretHash: client.secretHash,
         tenantId: client.tenantId
     };
 }
@@ -37,8 +35,7 @@ function fromDocument(client: ClientDocument) : Client {
         applicationType: client.applicationType,
         name: client.name,
         refreshTokenLifetime: client.refreshTokenLifetime,
-        secret: client.secret,
-        secretSalt: client.secretSalt,
+        secretHash: client.secretHash,
         tenantId: client.tenantId
     };
 }
