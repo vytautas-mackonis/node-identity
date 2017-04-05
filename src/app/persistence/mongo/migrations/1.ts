@@ -18,7 +18,7 @@ class InitialUserAndIndices implements DbMigration {
             name: 'Node-identity application',
             tenantId: 'admin',
             applicationType: 'Confidential',
-            secretHash: '$argon2i$v=19$m=131072,t=10,p=4$Nm56NkJWNFFlS1c5OEpMTFBLbVA2alNsWGNTc20zNVoyQU9PNWdwZTlHa3JvamhETXNZcWJGdEJ1dW9BMGpH$+uYT1MPVWnb34TmEvKoLzp6SxK/WjZZzCxQXZoT36Z0',
+            secretHash: '$argon2i$v=19$m=4096,t=3,p=1$Nm56NkJWNFFlS1c5OEpMTFBLbVA2alNsWGNTc20zNVoyQU9PNWdwZTlHa3JvamhETXNZcWJGdEJ1dW9BMGpH$WZ5feUSwbuiWCwxM3km34AvduSM7Hg2PsXoy7eRb8W0',
             allowedOrigin: null,
             refreshTokenLifetime: 30 * 60 * 1000,
             active: true
@@ -31,7 +31,7 @@ class InitialUserAndIndices implements DbMigration {
             loginLowercase: 'admin',
             name: 'Node-identity administrator',
             email: 'non-existing@unknowndomain',
-            passwordHash: '$argon2i$v=19$m=131072,t=10,p=4$Nm56NkJWNFFlS1c5OEpMTFBLbVA2alNsWGNTc20zNVoyQU9PNWdwZTlHa3JvamhETXNZcWJGdEJ1dW9BMGpH$jR1WxuqQp3vDq0/FtljnLL9hqYI4OJutL3PololDA4s',
+            passwordHash: '$argon2i$v=19$m=4096,t=3,p=1$UVk5RDB1VkswT3UzRXFtQms5UDZ6cmlHcmNZVlhpTTZVdTR1UjVLeWVFaUFXZGtOY1BjWENCMnRrdll5UXI1$bh+U8tLGn61bCsZXngOmm3Re/X8Lu/dBhpFLRpgHn/s',
             version: 0,
             passwordResetToken: null
         });

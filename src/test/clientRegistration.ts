@@ -9,17 +9,16 @@ import * as settings from './infrastructure/settings';
 interface Client {
     id: string;
     name: string;
-    tenantId: string;
     applicationType: string;
     allowedOrigin: string;
     refreshTokenLifetime: number;
     active: boolean;
 }
 
-function assertClient(client: Client) {
+function assertClient(tenantId: string, client: Client) {
     it('Should list client by admin', async () => {
         let http = await api.defaultAdminClient();
-        let response = await http.getJson(urls.clients());
+        let response = await http.getJson(urls.adminClients(tenantId));
         httpAssert.expectStatusCode(response, 200);
         let clients = response.body;
         _.remove(clients, c => c.id === settings.adminClientId);
@@ -30,7 +29,7 @@ function assertClient(client: Client) {
 
     it('Should get client by id using admin user', async () => {
         let http = await api.defaultAdminClient();
-        let response = await http.getJson(urls.client(client.id));
+        let response = await http.getJson(urls.adminClient(tenantId, client.id));
         httpAssert.expectStatusCode(response, 200);
         expect(response.body).to.eql(client);
     });
@@ -46,7 +45,6 @@ describe('Client registration', () => {
         const client = {
             id: uuid.v4(),
             name: uuid.v4(),
-            tenantId: tenant.id,
             applicationType: Math.random() > 0.5 ? 'Public' : 'Confidential',
             allowedOrigin: uuid.v4(),
             active: Math.random() > 0.5,
@@ -61,11 +59,11 @@ describe('Client registration', () => {
             let clientCopy = Object.assign({}, client);
             delete clientCopy['id'];
             clientCopy['secret'] = uuid.v4();
-            response = await http.putJson(urls.client(client.id), clientCopy);
+            response = await http.putJson(urls.adminClient(tenant.id, client.id), clientCopy);
             httpAssert.expectStatusCode(response, 201);
         });
 
-        assertClient(client);
+        assertClient(tenant.id, client);
     });
 
     describe('After registering and updating a client', () => {
@@ -77,7 +75,6 @@ describe('Client registration', () => {
         const client = {
             id: uuid.v4(),
             name: uuid.v4(),
-            tenantId: tenant.id,
             applicationType: Math.random() > 0.5 ? 'Public' : 'Confidential',
             allowedOrigin: uuid.v4(),
             active: Math.random() > 0.5,
@@ -89,7 +86,7 @@ describe('Client registration', () => {
             let http = await api.defaultAdminClient();
             let response = await http.putJson(urls.tenant(tenant.id), tenant);
             httpAssert.expectStatusCode(response, 201);
-            response = await http.putJson(urls.client(client.id), {
+            response = await http.putJson(urls.adminClient(tenant.id, client.id), {
                 name: uuid.v4(),
                 tenantId: tenant.id,
                 applicationType: Math.random() > 0.5 ? 'Public' : 'Confidential',
@@ -102,11 +99,11 @@ describe('Client registration', () => {
             let clientCopy = Object.assign({}, client);
             delete clientCopy['id'];
             clientCopy['secret'] = uuid.v4();
-            response = await http.putJson(urls.client(client.id), clientCopy);
+            response = await http.putJson(urls.adminClient(tenant.id, client.id), clientCopy);
             httpAssert.expectStatusCode(response, 200);
         });
 
-        assertClient(client);
+        assertClient(tenant.id, client);
     });
 
     describe('After registering two clients and deleting one', () => {
@@ -118,7 +115,6 @@ describe('Client registration', () => {
         const client = {
             id: uuid.v4(),
             name: uuid.v4(),
-            tenantId: tenant.id,
             applicationType: Math.random() > 0.5 ? 'Public' : 'Confidential',
             allowedOrigin: uuid.v4(),
             active: Math.random() > 0.5,
@@ -128,7 +124,6 @@ describe('Client registration', () => {
         const deleted = {
             id: uuid.v4(),
             name: uuid.v4(),
-            tenantId: tenant.id,
             applicationType: Math.random() > 0.5 ? 'Public' : 'Confidential',
             allowedOrigin: uuid.v4(),
             active: Math.random() > 0.5,
@@ -143,22 +138,22 @@ describe('Client registration', () => {
             let clientCopy = Object.assign({}, client);
             delete clientCopy['id'];
             clientCopy['secret'] = uuid.v4();
-            response = await http.putJson(urls.client(client.id), clientCopy);
+            response = await http.putJson(urls.adminClient(tenant.id, client.id), clientCopy);
             httpAssert.expectStatusCode(response, 201);
             clientCopy = Object.assign({}, deleted);
             delete clientCopy['id'];
             clientCopy['secret'] = uuid.v4();
-            response = await http.putJson(urls.client(deleted.id), clientCopy);
+            response = await http.putJson(urls.adminClient(tenant.id, deleted.id), clientCopy);
             httpAssert.expectStatusCode(response, 201);
-            response = await http.delete(urls.client(deleted.id));
+            response = await http.delete(urls.adminClient(tenant.id, deleted.id));
             httpAssert.expectStatusCode(response, 200);
         });
 
-        assertClient(client);
+        assertClient(tenant.id, client);
 
         it('Should not get deleted client by id using admin user', async () => {
             let http = await api.defaultAdminClient();
-            let response = await http.getJson(urls.client(deleted.id));
+            let response = await http.getJson(urls.adminClient(tenant.id, deleted.id));
             httpAssert.expectStatusCode(response, 404);
         });
     });

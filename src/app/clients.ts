@@ -7,31 +7,33 @@ export function configure(server: Express, repository: ClientService, hashAlgori
     function toRendition(client: Client) {
         let copy = Object.assign({}, client);
         delete copy['secretHash'];
+        delete copy['tenantId'];
         return copy;
     }
     
-    async function list() {
+    async function list(tenantId: string) {
         let clients = await repository.query({});
         return _.map(clients, toRendition);
     }
 
-    async function save(id: string, client: ClientSaveRequest) {
+    async function save(tenantId: string, id: string, client: ClientSaveRequest) {
+        client.tenantId = tenantId;
         client.secretHash = await hashAlgorithm.computeHash(client['secret']);
         delete client['secret'];
         return await repository.save(id, client);
     }
 
-    async function find(id: string) {
+    async function find(tenantId: string, id: string) {
         let client = await repository.getById(id);
         return client.map(toRendition);
     }
 
-    async function remove(id: string) {
+    async function remove(tenantId: string, id: string) {
         return await repository.delete(id);
     }
 
-    server.put('/clients/:id', (request, response, next) => {
-        save(request.params.id, request.body)
+    server.put('/admin/tenants/:tenantId/clients/:id', (request, response, next) => {
+        save(request.params.tenantId, request.params.id, request.body)
             .then(created => {
                 let statusCode = created ? 201: 200;
                 response.status(statusCode).send();
@@ -39,8 +41,8 @@ export function configure(server: Express, repository: ClientService, hashAlgori
             .catch(e => next(e));
     });
 
-    server.get('/clients/:id', (request, response, next) => {
-        find(request.params.id)
+    server.get('/admin/tenants/:tenantId/clients/:id', (request, response, next) => {
+        find(request.params.tenantId, request.params.id)
             .then(result => result.map(x => {
                 return { statusCode: 200, body: <any>x };
             }).getOrElse({ statusCode: 404, body: `Client with id ${request.params.id} not found`}))
@@ -48,14 +50,14 @@ export function configure(server: Express, repository: ClientService, hashAlgori
             .catch(next);
     })
 
-    server.get('/clients', (request, response, next) => {
-        list()
+    server.get('/admin/tenants/:tenantId/clients', (request, response, next) => {
+        list(request.params.tenantId)
             .then(tenants => response.status(200).send(tenants))
             .catch(next);
     });
 
-    server.delete('/clients/:id', (request, response, next) => {
-        remove(request.params.id)
+    server.delete('/admin/tenants/:tenantId/clients/:id', (request, response, next) => {
+        remove(request.params.tenantId, request.params.id)
             .then(() => response.status(200).send())
             .catch(next);
     });

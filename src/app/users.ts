@@ -5,7 +5,6 @@ import { HashAlgorithm } from './hashAlgorithm';
 
 interface UserRendition {
     id: string;
-    tenantId: string;
     login: string;
     name: string;
     email: string;
@@ -16,6 +15,7 @@ export function configure(server: Express, repository: UserService, hashAlgorith
         let copy = Object.assign({}, user);
         delete copy['passwordHash'];
         delete copy['passwordSalt'];
+        delete copy['tenantId'];
         return copy;
     }
     
@@ -24,8 +24,8 @@ export function configure(server: Express, repository: UserService, hashAlgorith
         return _.map(users, toRendition);
     }
 
-    async function save(id: string, user: UserRendition) {
-        return await repository.save(user.tenantId, user.id, user.login, user.email, user.name);
+    async function save(tenantId: string, id: string, user: UserRendition) {
+        return await repository.save(tenantId, user.id, user.login, user.email, user.name);
     }
 
     async function find(tenantId: string, id: string) {
@@ -42,8 +42,8 @@ export function configure(server: Express, repository: UserService, hashAlgorith
         await repository.changePassword(tenantId, userId, hash);
     }
 
-    server.put('/users/:id', (request, response, next) => {
-        save(request.params.id, request.body)
+    server.put('/admin/tenants/:tenantId/users/:id', (request, response, next) => {
+        save(request.params.tenantId, request.params.id, request.body)
             .then(created => {
                 let statusCode = created ? 201: 200;
                 response.status(statusCode).send();
@@ -51,8 +51,8 @@ export function configure(server: Express, repository: UserService, hashAlgorith
             .catch(e => next(e));
     });
 
-    server.get('/users/:id', (request, response, next) => {
-        find(request.query.tenantId, request.params.id)
+    server.get('/admin/tenants/:tenantId/users/:id', (request, response, next) => {
+        find(request.params.tenantId, request.params.id)
             .then(result => result.map(x => {
                 return { statusCode: 200, body: <any>x };
             }).getOrElse({ statusCode: 404, body: `Client with id ${request.params.id} not found`}))
@@ -60,20 +60,20 @@ export function configure(server: Express, repository: UserService, hashAlgorith
             .catch(next);
     })
 
-    server.get('/users', (request, response, next) => {
+    server.get('/admin/tenants/:tenantId/users', (request, response, next) => {
         list()
             .then(tenants => response.status(200).send(tenants))
             .catch(next);
     });
 
-    server.delete('/users/:id', (request, response, next) => {
-        remove(request.query.tenantId, request.params.id)
+    server.delete('/admin/tenants/:tenantId/users/:id', (request, response, next) => {
+        remove(request.params.tenantId, request.params.id)
             .then(() => response.status(200).send())
             .catch(next);
     });
 
-    server.put('/users/:id/password', (request, response, next) => {
-        setPassword(request.query.tenantId, request.params.id, request.body.password)
+    server.put('/admin/tenants/:tenantId/users/:id/password', (request, response, next) => {
+        setPassword(request.params.tenantId, request.params.id, request.body.password)
             .then(() => response.status(200).send())
             .catch(next);
     });

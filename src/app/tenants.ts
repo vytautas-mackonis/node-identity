@@ -25,7 +25,7 @@ export function configure(server: Express, repository: TenantService) {
         return await repository.delete(id);
     }
 
-    server.put('/tenants/:id', (request, response, next) => {
+    server.put('/admin/tenants/:id', (request, response, next) => {
         saveTenant(request.params.id, request.body)
             .then(created => {
                 let statusCode = created ? 201: 200;
@@ -34,7 +34,7 @@ export function configure(server: Express, repository: TenantService) {
             .catch(e => next(e));
     });
 
-    server.get('/tenants/:id', (request, response, next) => {
+    server.get('/admin/tenants/:id', (request, response, next) => {
         getTenant(request.params.id)
             .then(result => result.map(x => {
                 return { statusCode: 200, body: <any>x };
@@ -43,13 +43,13 @@ export function configure(server: Express, repository: TenantService) {
             .catch(next);
     })
 
-    server.get('/tenants', (request, response, next) => {
+    server.get('/admin/tenants', (request, response, next) => {
         listTenants()
             .then(tenants => response.status(200).send(tenants))
             .catch(next);
     });
 
-    server.delete('/tenants/:id', (request, response, next) => {
+    server.delete('/admin/tenants/:id', (request, response, next) => {
         deleteTenant(request.params.id)
             .then(() => response.status(200).send())
             .catch(next);
