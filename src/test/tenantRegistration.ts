@@ -5,14 +5,10 @@ import { expect } from 'chai';
 import * as uuid from 'node-uuid';
 import * as _ from 'lodash';
 import * as settings from './infrastructure/settings';
+import * as data from './infrastructure/data';
 
-interface Tenant {
-    id: string;
-    name: string;
-}
-
-function assertTenant(tenant: Tenant) {
-    it('Should list tenant by admin', async () => {
+function assertTenant(tenant: data.Tenant) {
+    it('Should list tenant with admin user', async () => {
         let client = await api.defaultAdminClient();
         let response = await client.getJson(urls.tenants());
         httpAssert.expectStatusCode(response, 200);
@@ -24,7 +20,7 @@ function assertTenant(tenant: Tenant) {
         ]);
     });
 
-    it('Should get tenant by id using admin user', async () => {
+    it('Should get tenant by id with admin user', async () => {
         let client = await api.defaultAdminClient();
         let response = await client.getJson(urls.tenant(tenant.id));
         httpAssert.expectStatusCode(response, 200);
@@ -33,12 +29,9 @@ function assertTenant(tenant: Tenant) {
 }
 
 describe('Tenant registration', () => {
+    const tenant = data.randomTenant();
+    
     describe('After registering a tenant', () => {
-        const tenant = {
-            id: uuid.v4(),
-            name: uuid.v4()
-        };
-
         before(async () => {
             await api.dropDatabase();
             let client = await api.defaultAdminClient();
@@ -52,11 +45,6 @@ describe('Tenant registration', () => {
     });
 
     describe('After registering and updating a tenant', () => {
-        const tenant = {
-            id: uuid.v4(),
-            name: uuid.v4()
-        };
-
         before(async () => {
             await api.dropDatabase();
             let client = await api.defaultAdminClient();
@@ -72,15 +60,7 @@ describe('Tenant registration', () => {
     });
 
     describe('After registering two tenants and deleting one', () => {
-        const tenant = {
-            id: uuid.v4(),
-            name: uuid.v4()
-        };
-
-        const deleted = {
-            id: uuid.v4(),
-            name: uuid.v4()
-        };
+        const deleted = data.randomTenant();
 
         before(async () => {
             await api.dropDatabase();
@@ -99,7 +79,7 @@ describe('Tenant registration', () => {
 
         assertTenant(tenant);
 
-        it('Should not get deleted tenant by id using admin user', async () => {
+        it('Should not get deleted tenant by id with admin user', async () => {
             let client = await api.defaultAdminClient();
             let response = await client.getJson(urls.tenant(deleted.id));
             httpAssert.expectStatusCode(response, 404);

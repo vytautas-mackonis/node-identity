@@ -1,4 +1,5 @@
-import { Express } from 'express';
+import { Express, Request } from 'express';
+import * as promisify from './promisify';
 import * as _ from 'lodash';
 import { ClientSaveRequest, ClientService, Client } from './persistence';
 import { HashAlgorithm } from './hashAlgorithm';
@@ -12,53 +13,58 @@ export function configure(server: Express, repository: ClientService, hashAlgori
     }
     
     async function list(tenantId: string) {
-        let clients = await repository.query({});
-        return _.map(clients, toRendition);
+        const clients = await repository.query({});
+        const body = _.map(clients, toRendition);
+        return { statusCode: 200, body: body };
     }
 
     async function save(tenantId: string, id: string, client: ClientSaveRequest) {
         client.tenantId = tenantId;
         client.secretHash = await hashAlgorithm.computeHash(client['secret']);
         delete client['secret'];
-        return await repository.save(id, client);
+        const created = await repository.save(id, client);
+        return { statusCode: created ? 201 : 200 };
     }
 
     async function find(tenantId: string, id: string) {
-        let client = await repository.getById(id);
-        return client.map(toRendition);
+        const client = await repository.getById(id);
+        return client.map(toRendition)
+            .map(x => { return { statusCode: 200, body: <any>x }; })
+            .getOrElse({ statusCode: 404, body: `Client with id ${id} not found.` });
     }
 
     async function remove(tenantId: string, id: string) {
-        return await repository.delete(id);
+        await repository.delete(id);
+        return { statusCode: 200 };
     }
 
-    server.put('/admin/tenants/:tenantId/clients/:id', (request, response, next) => {
-        save(request.params.tenantId, request.params.id, request.body)
-            .then(created => {
-                let statusCode = created ? 201: 200;
-                response.status(statusCode).send();
-            })
-            .catch(e => next(e));
-    });
+    server.put('/admin/tenants/:tenantId/clients/:id', 
+        promisify.expressHandler(req =>
+            save(req.params.tenantId, req.params.id, req.body)
+        )
+    );
 
-    server.get('/admin/tenants/:tenantId/clients/:id', (request, response, next) => {
-        find(request.params.tenantId, request.params.id)
-            .then(result => result.map(x => {
-                return { statusCode: 200, body: <any>x };
-            }).getOrElse({ statusCode: 404, body: `Client with id ${request.params.id} not found`}))
-            .then(result => response.status(result.statusCode).send(result.body))
-            .catch(next);
-    })
+    server.get('/admin/tenants/:tenantId/clients/:id',
+        promisify.expressHandler(req =>
+            find(req.params.tenantId, req.params.id)
+        )
+    );
 
-    server.get('/admin/tenants/:tenantId/clients', (request, response, next) => {
-        list(request.params.tenantId)
-            .then(tenants => response.status(200).send(tenants))
-            .catch(next);
-    });
+    server.get('/admin/tenants/:tenantId/clients',
+        promisify.expressHandler(req =>
+            list(req.params.tenantId)
+        )
+    );
 
-    server.delete('/admin/tenants/:tenantId/clients/:id', (request, response, next) => {
-        remove(request.params.tenantId, request.params.id)
-            .then(() => response.status(200).send())
-            .catch(next);
-    });
+    server.get('/clients',
+        promisify.expressHandler(req =>
+            list('admin')
+        )
+    );
+
+    server.delete('/admin/tenants/:tenantId/clients/:id',
+        promisify.expressHandler(req =>
+            remove(req.params.tenantId, req.params.id)
+        )
+    );
 }

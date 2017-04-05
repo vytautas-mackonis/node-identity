@@ -57,6 +57,7 @@ nconf.defaults({
     })
 
     app.use((err, req, res, next) => {
+        console.error(err);
         res.status(500).send({ error: 'Oops! Something went wrong!' });
     })
      

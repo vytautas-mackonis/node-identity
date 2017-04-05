@@ -29,3 +29,11 @@ export function adminUser(tenantId: string, id: string) {
 export function adminUserPassword(tenantId: string, id: string) {
     return `admin/tenants/${tenantId}/users/${id}/password`;
 }
+
+export function clients() {
+    return 'clients';
+}
+
+export function client(id: string) {
+    return `clients/${id}`;
+}

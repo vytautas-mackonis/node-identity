@@ -5,16 +5,10 @@ import { expect } from 'chai';
 import * as uuid from 'node-uuid';
 import * as _ from 'lodash';
 import * as settings from './infrastructure/settings';
+import * as data from './infrastructure/data';
 
-interface User {
-    id: string;
-    name: string;
-    login: string;
-    email: string;
-}
-
-function assertUser(tenantId: string, user: User) {
-    it('Should list user by admin', async () => {
+function assertUser(tenantId: string, user: data.User) {
+    it('Should list user using admin api with admin user', async () => {
         let http = await api.defaultAdminClient();
         let response = await http.getJson(urls.adminUsers(tenantId));
         httpAssert.expectStatusCode(response, 200);
@@ -25,7 +19,7 @@ function assertUser(tenantId: string, user: User) {
         ]);
     });
 
-    it('Should get user by id using admin user', async () => {
+    it('Should get user by id using admin api with admin user', async () => {
         let http = await api.defaultAdminClient();
         let response = await http.getJson(urls.adminUser(tenantId, user.id));
         httpAssert.expectStatusCode(response, 200);
@@ -34,19 +28,10 @@ function assertUser(tenantId: string, user: User) {
 }
 
 describe('User registration', () => {
+    const tenant = data.randomTenant();
+    const user = data.randomUser();
+
     describe('After registering a user', () => {
-        const tenant = {
-            id: uuid.v4(),
-            name: uuid.v4()
-        };
-
-        const user = {
-            id: uuid.v4(),
-            login: uuid.v4(),
-            name: uuid.v4(),
-            email: uuid.v4() + '@' + uuid.v4() + '.com'
-        };
-
         before(async () => {
             await api.dropDatabase();
             let http = await api.defaultAdminClient();
@@ -60,18 +45,6 @@ describe('User registration', () => {
     });
 
     describe('After registering and updating a user', () => {
-        const tenant = {
-            id: uuid.v4(),
-            name: uuid.v4()
-        };
-
-        const user = {
-            id: uuid.v4(),
-            login: uuid.v4(),
-            name: uuid.v4(),
-            email: uuid.v4() + '@' + uuid.v4() + '.com'
-        };
-
         before(async () => {
             await api.dropDatabase();
             let http = await api.defaultAdminClient();
@@ -92,24 +65,7 @@ describe('User registration', () => {
     });
 
     describe('After registering two users and deleting one', () => {
-        const tenant = {
-            id: uuid.v4(),
-            name: uuid.v4()
-        };
-
-        const user = {
-            id: uuid.v4(),
-            login: uuid.v4(),
-            name: uuid.v4(),
-            email: uuid.v4() + '@' + uuid.v4() + '.com'
-        };
-
-        const deleted = {
-            id: uuid.v4(),
-            login: uuid.v4(),
-            name: uuid.v4(),
-            email: uuid.v4() + '@' + uuid.v4() + '.com'
-        };
+        const deleted = data.randomUser();
 
         before(async () => {
             await api.dropDatabase();
@@ -126,7 +82,7 @@ describe('User registration', () => {
 
         assertUser(tenant.id, user);
         
-        it('Should not get deleted user by id using admin user', async () => {
+        it('Should not get deleted user by id using admin api with admin user', async () => {
             let http = await api.defaultAdminClient();
             let response = await http.getJson(urls.adminUser(tenant.id, deleted.id));
             httpAssert.expectStatusCode(response, 404);

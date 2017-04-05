@@ -13,6 +13,7 @@ describe('After registering a tenant', () => {
     const client1 = {
         id: uuid.v4(),
         name: uuid.v4(),
+        secret: uuid.v4();
         tenantId: tenant1.id,
         applicationType: 'Confidential',
         allowedOrigin: uuid.v4(),
