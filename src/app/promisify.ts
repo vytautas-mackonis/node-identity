@@ -6,12 +6,12 @@ interface ResponseMessage {
 }
 
 interface PromisifiedExpressHandler {
-    (req: Request): Promise<ResponseMessage>;
+    (req: Request, resp?: Response): Promise<ResponseMessage>;
 }
 
 export function expressHandler(handler: PromisifiedExpressHandler): RequestHandler {
     return (req: Request, resp: Response, next: NextFunction) => {
-        handler(req)
+        handler(req, resp)
             .then(result => resp.status(result.statusCode).send(result.body))
             .catch(next);
     }

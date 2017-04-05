@@ -38,6 +38,7 @@ nconf.defaults({
     });
 
     app.use('/token', oauth.token());
+    app.use(oauth.authenticate());
 
     tenants.configure(app, persistence.tenants);
     clients.configure(app, persistence.clients, hashAlgorithm);
