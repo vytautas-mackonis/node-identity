@@ -37,3 +37,11 @@ export function clients() {
 export function client(id: string) {
     return `clients/${id}`;
 }
+
+export function users() {
+    return 'users';
+}
+
+export function user(id: string) {
+    return `users/${id}`;
+}

@@ -2,6 +2,7 @@ import { Express } from 'express';
 import * as _ from 'lodash';
 import { UserService, User } from './persistence';
 import { HashAlgorithm } from './hashAlgorithm';
+import * as promisify from './promisify';
 
 interface UserRendition {
     id: string;
@@ -14,67 +15,73 @@ export function configure(server: Express, repository: UserService, hashAlgorith
     function toRendition(user: User) {
         let copy = Object.assign({}, user);
         delete copy['passwordHash'];
-        delete copy['passwordSalt'];
         delete copy['tenantId'];
         return copy;
     }
     
-    async function list() {
-        let users = await repository.query({});
-        return _.map(users, toRendition);
+    async function list(tenantId: string) {
+        let users = await repository.query({ tenantId: tenantId });
+        return { statusCode: 200, body: _.map(users, toRendition) };
     }
 
     async function save(tenantId: string, id: string, user: UserRendition) {
-        return await repository.save(tenantId, user.id, user.login, user.email, user.name);
+        const created = await repository.save(tenantId, user.id, user.login, user.email, user.name);
+        return { statusCode: created ? 201 : 200 };
     }
 
     async function find(tenantId: string, id: string) {
-        let client = await repository.getById(tenantId, id);
-        return client.map(toRendition);
+        let user = await repository.getById(tenantId, id);
+        return user.map(toRendition)
+            .map(x => { return { statusCode: 200, body: <any>x }})
+            .getOrElse({ statusCode: 404, body: `User with id ${id} not found`});
     }
 
     async function remove(tenantId: string, id: string) {
-        return await repository.delete(tenantId, id);
+        await repository.delete(tenantId, id);
+        return { statusCode: 200 };
     }
 
     async function setPassword(tenantId: string, userId: string, password: string) {
         const hash = await hashAlgorithm.computeHash(password);
         await repository.changePassword(tenantId, userId, hash);
+        return { statusCode: 200 };
     }
 
-    server.put('/admin/tenants/:tenantId/users/:id', (request, response, next) => {
-        save(request.params.tenantId, request.params.id, request.body)
-            .then(created => {
-                let statusCode = created ? 201: 200;
-                response.status(statusCode).send();
-            })
-            .catch(e => next(e));
-    });
+    server.put('/admin/tenants/:tenantId/users/:id', 
+        promisify.expressHandler(req =>
+            save(req.params.tenantId, req.params.id, req.body)
+        )
+    );
 
-    server.get('/admin/tenants/:tenantId/users/:id', (request, response, next) => {
-        find(request.params.tenantId, request.params.id)
-            .then(result => result.map(x => {
-                return { statusCode: 200, body: <any>x };
-            }).getOrElse({ statusCode: 404, body: `Client with id ${request.params.id} not found`}))
-            .then(result => response.status(result.statusCode).send(result.body))
-            .catch(next);
-    })
+    server.get('/admin/tenants/:tenantId/users/:id',
+        promisify.expressHandler(req =>
+            find(req.params.tenantId, req.params.id)
+        )
+    );
 
-    server.get('/admin/tenants/:tenantId/users', (request, response, next) => {
-        list()
-            .then(tenants => response.status(200).send(tenants))
-            .catch(next);
-    });
+    server.get('/users/:id',
+        promisify.expressHandler((req, resp) =>
+            find(resp.locals.oauth.token.user.tenantId, req.params.id)
+        )
+    );
 
-    server.delete('/admin/tenants/:tenantId/users/:id', (request, response, next) => {
-        remove(request.params.tenantId, request.params.id)
-            .then(() => response.status(200).send())
-            .catch(next);
-    });
+    server.get('/admin/tenants/:tenantId/users',
+        promisify.expressHandler(req => list(req.params.tenantId))
+    );
 
-    server.put('/admin/tenants/:tenantId/users/:id/password', (request, response, next) => {
-        setPassword(request.params.tenantId, request.params.id, request.body.password)
-            .then(() => response.status(200).send())
-            .catch(next);
-    });
+    server.get('/users',
+        promisify.expressHandler((req, resp) => list(resp.locals.oauth.token.user.tenantId))
+    );
+
+    server.delete('/admin/tenants/:tenantId/users/:id',
+        promisify.expressHandler(req =>
+            remove(req.params.tenantId, req.params.id)
+        )
+    );
+
+    server.put('/admin/tenants/:tenantId/users/:id/password',
+        promisify.expressHandler(req =>
+            setPassword(req.params.tenantId, req.params.id, req.body.password)
+        )
+    );
 }

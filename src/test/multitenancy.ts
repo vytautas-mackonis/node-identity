@@ -132,6 +132,38 @@ describe('Multitenancy', () => {
         });
     }
 
+    function userCanSeeSingleUserOfSameTenant(user: data.User, loginClient: data.Client, retrievedUser: data.User) {
+        it(`Should allow ${user.name} to get ${retrievedUser.name} by id`, async () => {
+            const http = await api.authenticatedClient(user.login, user['password'], loginClient.id, loginClient.secret);
+            const response = await http.getJson(urls.user(retrievedUser.id));
+            httpAssert.expectStatusCode(response, 200);
+            const copy = Object.assign({}, retrievedUser);
+            delete copy['password'];
+            expect(response.body).to.be.eql(copy);
+        });
+    }
+
+    function userCannotSeeSingleUserOfDifferentTenant(user: data.User, loginClient: data.Client, retrievedUser: data.User) {
+        it(`Should allow ${user.name} to get ${retrievedUser.name} by id`, async () => {
+            const http = await api.authenticatedClient(user.login, user['password'], loginClient.id, loginClient.secret);
+            const response = await http.getJson(urls.user(retrievedUser.id));
+            httpAssert.expectStatusCode(response, 404);
+        });
+    }
+
+    function userCanSeeOnlyUsersOfHisTenant(user: data.User, loginClient: data.Client, tenantUsers: data.User[]) {
+        it(`Should allow ${user.name} see only his tenant users`, async () => {
+            const http = await api.authenticatedClient(user.login, user['password'], loginClient.id, loginClient.secret);
+            const response = await http.getJson(urls.users());
+            httpAssert.expectStatusCode(response, 200);
+            const copy = _.map(tenantUsers, x => {
+                const c = Object.assign({}, x);
+                delete c['password'];
+                return c;
+            });
+            expect(response.body).to.be.eql(copy);
+        });
+    }
     for (let i = 0; i < tenants.length; i++) {
         for (let j = 0; j < tenants[i].users.length; j++) {
             for (let k = 0; k < tenants[i].clients.length; k++) {
@@ -141,6 +173,13 @@ describe('Multitenancy', () => {
                 userCannotSeeSingleClientOfDifferentTenant(tenants[i].users[j], tenants[i].clients[k], tenants[(i + 1) % tenants.length].clients[k]);
                 userCanSeeOnlyClientsOfHisTenant(tenants[i].users[j], tenants[i].clients[k], tenants[i].clients);
             }
+
+            for (let k = 0; k < tenants[i].users.length; k++) {
+                userCanSeeSingleUserOfSameTenant(tenants[i].users[j], tenants[i].clients[0], tenants[i].users[k]);
+                userCannotSeeSingleUserOfDifferentTenant(tenants[i].users[j], tenants[i].clients[0], tenants[(i + 1) % tenants.length].users[k]);
+            }
+
+            userCanSeeOnlyUsersOfHisTenant(tenants[i].users[j], tenants[i].clients[0], tenants[i].users);
         }
     }
 });
