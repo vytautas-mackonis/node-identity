@@ -6,6 +6,7 @@ import * as uuid from 'node-uuid';
 import * as _ from 'lodash';
 import * as settings from './infrastructure/settings';
 import * as data from './infrastructure/data';
+import { HttpClient } from './infrastructure/httpClient';
 
 function assertUser(tenantId: string, user: data.User) {
     it('Should list user using admin api with admin user', async () => {
@@ -28,13 +29,14 @@ function assertUser(tenantId: string, user: data.User) {
 }
 
 describe('User registration', () => {
+    let http: HttpClient;
     const tenant = data.randomTenant();
     const user = data.randomUser();
 
     describe('After registering a user', () => {
         before(async () => {
             await api.dropDatabase();
-            let http = await api.defaultAdminClient();
+            http = await api.defaultAdminClient();
             let response = await http.putJson(urls.tenant(tenant.id), tenant);
             httpAssert.expectStatusCode(response, 201);
             response = await http.putJson(urls.adminUser(tenant.id, user.id), user);
@@ -42,6 +44,38 @@ describe('User registration', () => {
         });
 
         assertUser(tenant.id, user);
+
+        it('Should not allow creating a user with the same login in the same tenant', async () => {
+            let conflicting = data.randomUser();
+            conflicting.login = user.login;
+            let response = await http.putJson(urls.adminUser(tenant.id, conflicting.id), conflicting);
+            httpAssert.expectStatusCode(response, 409);
+        });
+
+        it('Should allow creating a user with the same login in a different tenant', async () => {
+            const tenant2 = data.randomTenant();
+            let nonConflicting = data.randomUser();
+            nonConflicting.login = user.login;
+            let response = await http.putJson(urls.tenant(tenant2.id), tenant);
+            response = await http.putJson(urls.adminUser(tenant2.id, nonConflicting.id), nonConflicting);
+            httpAssert.expectStatusCode(response, 201);
+        });
+
+        it('Should not allow creating a user with the same email in the same tenant', async () => {
+            let conflicting = data.randomUser();
+            conflicting.email = user.email;
+            let response = await http.putJson(urls.adminUser(tenant.id, conflicting.id), conflicting);
+            httpAssert.expectStatusCode(response, 409);
+        });
+
+        it('Should allow creating a user with the same email in a different tenant', async () => {
+            const tenant2 = data.randomTenant();
+            let nonConflicting = data.randomUser();
+            nonConflicting.email = user.email;
+            let response = await http.putJson(urls.tenant(tenant2.id), tenant);
+            response = await http.putJson(urls.adminUser(tenant2.id, nonConflicting.id), nonConflicting);
+            httpAssert.expectStatusCode(response, 201);
+        });
     });
 
     describe('After registering and updating a user', () => {

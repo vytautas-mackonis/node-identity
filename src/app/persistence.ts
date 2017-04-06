@@ -52,6 +52,20 @@ export interface User {
     passwordHash: string;
 }
 
+export class DuplicateLoginError extends Error {
+    constructor(login: string) {
+        super(`A user with login '${login}' already exists`);
+        Object.setPrototypeOf(this, DuplicateLoginError.prototype);
+    }
+}
+
+export class DuplicateEmailError extends Error {
+    constructor(email: string) {
+        super(`A user with email '${email}' already exists`);
+        Object.setPrototypeOf(this, DuplicateLoginError.prototype);
+    }
+}
+
 export interface UserFilter {
     userId?: string;
     tenantId?: string;

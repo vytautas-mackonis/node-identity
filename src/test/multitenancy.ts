@@ -129,7 +129,7 @@ describe('Multitenancy', () => {
                 delete c['secret'];
                 return c;
             });
-            expect(response.body).to.be.eql(copy);
+            expect(response.body).to.have.deep.members(copy);
         });
     }
 
@@ -162,7 +162,7 @@ describe('Multitenancy', () => {
                 delete c['password'];
                 return c;
             });
-            expect(response.body).to.be.eql(copy);
+            expect(response.body).to.have.deep.members(copy);
         });
     }
     for (let i = 0; i < tenants.length; i++) {

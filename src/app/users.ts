@@ -1,6 +1,6 @@
 import { Express } from 'express';
 import * as _ from 'lodash';
-import { UserService, User } from './persistence';
+import { UserService, User, DuplicateLoginError, DuplicateEmailError } from './persistence';
 import { HashAlgorithm } from './hashAlgorithm';
 import * as promisify from './promisify';
 
@@ -25,8 +25,18 @@ export function configure(server: Express, repository: UserService, hashAlgorith
     }
 
     async function save(tenantId: string, id: string, user: UserRendition) {
-        const created = await repository.save(tenantId, user.id, user.login, user.email, user.name);
-        return { statusCode: created ? 201 : 200 };
+        try {
+            const created = await repository.save(tenantId, user.id, user.login, user.email, user.name);
+            return { statusCode: created ? 201 : 200 };
+        } catch (e) {
+            if (e instanceof DuplicateLoginError) {
+                return { statusCode: 409, body: { message: `A user with login '${user.login}' already exists.` } };
+            }
+            if (e instanceof DuplicateEmailError) {
+                return { statusCode: 409, body: { message: `A user with email '${user.email}' already exists.` } };
+            }
+            throw e;
+        }
     }
 
     async function find(tenantId: string, id: string) {

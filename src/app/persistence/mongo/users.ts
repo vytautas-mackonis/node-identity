@@ -1,8 +1,8 @@
-import { User, UserFilter, Claim, UserService }from '../../persistence';
+import { User, UserFilter, Claim, UserService, DuplicateLoginError, DuplicateEmailError } from '../../persistence';
 import * as maybe from 'data.maybe';
 import * as _ from 'lodash';
 
-import { Db, Collection } from 'mongodb';
+import { Db, Collection, MongoError } from 'mongodb';
 
 interface UserDocument {
     userId: string;
@@ -72,18 +72,31 @@ export class MongoUserService implements UserService {
     }
 
     public async save(tenantId: string, id: string, login: string, email: string, name: string) {
-        let doc: UserDocument = {
-            tenantId: tenantId,
-            userId: id,
-            login: login,
-            loginLowercase: login.toLowerCase(),
-            email: email.toLowerCase(),
-            name: name,
-            passwordResetToken: null
-        };
+        try {
+            let doc: UserDocument = { tenantId: tenantId,
+                userId: id,
+                login: login,
+                loginLowercase: login.toLowerCase(),
+                email: email.toLowerCase(),
+                name: name,
+                passwordResetToken: null
+            };
 
-        let saveResult = await this.users.update({ tenantId: tenantId, userId: id }, { $set: doc }, { upsert: true });
-        return saveResult.result.upserted && saveResult.result.upserted.length > 0;
+            let saveResult = await this.users.update({ tenantId: tenantId, userId: id }, { $set: doc }, { upsert: true });
+            return saveResult.result.upserted && saveResult.result.upserted.length > 0;
+        } catch (e) {
+            if (e instanceof MongoError) {
+                if (e.message.indexOf('users_login dup key') > -1) {
+                    throw new DuplicateLoginError(login);
+                }
+                if (e.message.indexOf('users_email dup key') > -1) {
+                    throw new DuplicateEmailError(email);
+                }
+
+                throw e;
+            }
+            throw e;
+        }
     }
 
     public async changePassword(tenantId: string, id: string, passwordHash: string) {

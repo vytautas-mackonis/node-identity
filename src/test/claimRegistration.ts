@@ -149,7 +149,7 @@ describe('Claim registration', () => {
             const http = await api.defaultAdminClient();
             const response = await http.getJson(urls.adminClaims(tenant.id, user.id));
             httpAssert.expectStatusCode(response, 200);
-            expect(response.body).to.be.eql([
+            expect(response.body).to.have.deep.members([
                 claim,
                 claim2
             ]);
@@ -257,7 +257,7 @@ describe('Claim registration', () => {
             httpAssert.expectStatusCode(response, 200);
             response = await http.getJson(urls.adminClaims(tenant.id, user.id));
             httpAssert.expectStatusCode(response, 200);
-            expect(response.body).to.be.eql(claims);
+            expect(response.body).to.have.deep.members(claims);
         })
     });
 });

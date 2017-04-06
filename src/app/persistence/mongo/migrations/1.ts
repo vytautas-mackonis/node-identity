@@ -36,6 +36,8 @@ class InitialUserAndIndices implements DbMigration {
             passwordResetToken: null
         });
 
+        await users.createIndex({ tenantId: 1, loginLowercase: 1 }, { unique: true, name: 'users_login' });
+        await users.createIndex({ tenantId: 1, email: 1 }, { unique: true, name: 'users_email' });
     }
 }
 

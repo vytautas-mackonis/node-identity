@@ -2,7 +2,7 @@ import { Express, Request } from 'express';
 import * as promisify from './promisify';
 import * as _ from 'lodash';
 import * as maybe from 'data.maybe';
-import { ClientSaveRequest, ClientService, Client } from './persistence';
+import { ClientService, Client } from './persistence';
 import { HashAlgorithm } from './hashAlgorithm';
 
 export function configure(server: Express, repository: ClientService, hashAlgorithm: HashAlgorithm) {
@@ -19,7 +19,7 @@ export function configure(server: Express, repository: ClientService, hashAlgori
         return { statusCode: 200, body: body };
     }
 
-    async function save(tenantId: string, id: string, client: ClientSaveRequest) {
+    async function save(tenantId: string, id: string, client: Client) {
         client.tenantId = tenantId;
         client.secretHash = await hashAlgorithm.computeHash(client['secret']);
         delete client['secret'];
