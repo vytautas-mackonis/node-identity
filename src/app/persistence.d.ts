@@ -61,6 +61,11 @@ export interface UserFilter {
     claimValue?: string;
 }
 
+export interface Claim {
+    key: string;
+    value: string;
+}
+
 export interface UserService {
     query(filter: UserFilter): Promise<User[]>;
     getById(tenantId: string, id: string): Promise<maybe.Maybe<User>>;
@@ -69,6 +74,11 @@ export interface UserService {
     save(tenantId: string, id: string, login: string, email: string, name: string): Promise<boolean>;
     changePassword(tenantId: string, id: string, passwordHash: string): Promise<void>;
     delete(tenantId: string, id: string): Promise<void>;
+
+    claimsForUser(tenantId: string, userId: string) : Promise<Claim[]>;
+    setUserClaim(tenantId: string, userId: string, claim: Claim): Promise<boolean>;
+    replaceUserClaims(tenantId: string, userId: string, claims: Claim[]): Promise<void>;
+    removeUserClaim(tenantId: string, userId: string, claimKey: string): Promise<void>;
 }
 
 export interface DatabaseInitializer {

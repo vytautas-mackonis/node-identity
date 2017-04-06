@@ -5,6 +5,7 @@ import { OAuthModel } from './model';
 import * as tenants from './tenants';
 import * as clients from './clients';
 import * as users from './users';
+import * as claims from './claims';
 import * as MongoOAuthPersistenceFactory from './persistence/mongo/index';
 import { Argon2HashAlgorithm } from './argon2HashAlgorithm';
 const o = require('express-oauth-server');
@@ -43,6 +44,7 @@ nconf.defaults({
     tenants.configure(app, persistence.tenants);
     clients.configure(app, persistence.clients, hashAlgorithm);
     users.configure(app, persistence.users, hashAlgorithm);
+    claims.configure(app, persistence.users);
      
     app.use((req, res, next) => {
         res.status(404);

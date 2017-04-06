@@ -1,4 +1,4 @@
-import { User, UserFilter, UserService }from '../../persistence';
+import { User, UserFilter, Claim, UserService }from '../../persistence';
 import * as maybe from 'data.maybe';
 import * as _ from 'lodash';
 
@@ -36,8 +36,11 @@ function arrayToMaybe<T>(arr: T[]) : maybe.Maybe<T> {
 
 export class MongoUserService implements UserService {
     private users: Collection;
+    private claims: Collection;
+
     constructor(db: Db) {
         this.users = db.collection('users');
+        this.claims = db.collection('claims');
     }
 
     public async query(filter: UserFilter) {
@@ -89,5 +92,31 @@ export class MongoUserService implements UserService {
 
     public async delete(tenantId: string, id: string) {
         await this.users.remove({ tenantId: tenantId, userId: id });
+    }
+
+    public async claimsForUser(tenantId: string, userId: string) : Promise<Claim[]> {
+        return await this.claims.find<Claim>({ tenantId: tenantId, userId: userId })
+            .map(x => {
+                return { key: x.key, value: x.value };
+            }).toArray();
+    }
+
+    public async setUserClaim(tenantId: string, userId: string, claim: Claim): Promise<boolean> {
+        let doc = {
+            tenantId: tenantId,
+            userId: userId,
+            key: claim.key,
+            value: claim.value
+        };
+        const saveResult = await this.claims.update({ tenantId: tenantId, userId: userId, key: claim.key }, { $set: doc }, { upsert: true });
+        return saveResult.result.upserted && saveResult.result.upserted.length > 0;
+    }
+
+    public async replaceUserClaims(tenantId: string, userId: string, claims: Claim[]): Promise<void> {
+
+    }
+
+    public async removeUserClaim(tenantId: string, userId: string, claimKey: string): Promise<void> {
+        await this.claims.remove({ tenantId: tenantId, userId: userId, key: claimKey });
     }
 }

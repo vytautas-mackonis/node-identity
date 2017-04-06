@@ -30,6 +30,14 @@ export function adminUserPassword(tenantId: string, id: string) {
     return `admin/tenants/${tenantId}/users/${id}/password`;
 }
 
+export function adminClaims(tenantId: string, userId: string) {
+    return `admin/tenants/${tenantId}/users/${userId}/claims`;
+}
+
+export function adminClaim(tenantId: string, userId: string, key: string) {
+    return `admin/tenants/${tenantId}/users/${userId}/claims/${encodeURIComponent(key)}`;
+}
+
 export function clients() {
     return 'clients';
 }
@@ -44,4 +52,12 @@ export function users() {
 
 export function user(id: string) {
     return `users/${id}`;
+}
+
+export function claims(userId: string) {
+    return `users/${userId}/claims`;
+}
+
+export function claim(userId: string, key: string) {
+    return `users/${userId}/claims/${encodeURIComponent(key)}`;
 }

@@ -22,6 +22,11 @@ export interface User {
     email: string;
 }
 
+export interface Claim {
+    key: string;
+    value: string;
+}
+
 export function randomTenant() : Tenant {
     return {
         id: uuid.v4(),
@@ -47,5 +52,12 @@ export function randomUser() : User {
         login: uuid.v4(),
         name: uuid.v4(),
         email: uuid.v4() + '@' + uuid.v4() + '.com'
+    };
+}
+
+export function randomClaim() : Claim {
+    return {
+        key: uuid.v4(),
+        value: uuid.v4()
     };
 }
