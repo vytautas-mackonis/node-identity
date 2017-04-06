@@ -4,6 +4,9 @@ import * as urls from './infrastructure/urls';
 import * as httpAssert from './infrastructure/httpAssert';
 import * as uuid from 'node-uuid';
 import * as data from './infrastructure/data';
+import * as jwt from 'jsonwebtoken';
+import * as _ from 'lodash';
+import { expect } from 'chai';
 
 describe('Authentication', () => {
     function shouldFailToLogin(grantType: string, user: string, password: string, clientId: string, clientSecret: string) {
@@ -46,6 +49,11 @@ describe('Authentication', () => {
         client.applicationType = 'Confidential';
         client.active = true;
         const user = data.randomUser();
+        const claims = [
+            data.randomClaim(),
+            data.randomClaim(),
+            data.randomClaim()
+        ];
 
         await api.dropDatabase();
         let http = await api.defaultAdminClient();
@@ -55,11 +63,24 @@ describe('Authentication', () => {
         httpAssert.expectStatusCode(response, 201);
         response = await http.putJson(urls.adminUser(tenant.id, user.id), user);
         httpAssert.expectStatusCode(response, 201);
+        response = await http.putJson(urls.adminClaims(tenant.id, user.id), claims);
+        httpAssert.expectStatusCode(response, 200);
         let password = uuid.v4();
         response = await http.putJson(urls.adminUserPassword(tenant.id, user.id), { password: password });
         httpAssert.expectStatusCode(response, 200);
 
-        await api.authenticatedClient(user.login, password, client.id, client.secret);
+        response = await api.login(user.login, password, client.id, client.secret);
+        httpAssert.expectStatusCode(response, 200);
+
+        const tokenPayload = jwt.verify(response.body.access_token, 'secret');
+        delete tokenPayload.iat;
+        delete tokenPayload.exp;
+
+        let expectedPayload = _.chain(claims).indexBy(x => x.key).mapValues(x => x.value).value();
+        expectedPayload['ni:tenantId'] = tenant.id;
+        expectedPayload['ni:userId'] = user.id;
+        expectedPayload['ni:login'] = user.login;
+        expect(tokenPayload).to.be.eql(expectedPayload);
     });
 
     it('Should not login with deleted client', async () => {
@@ -84,14 +105,7 @@ describe('Authentication', () => {
         response = await http.delete(urls.adminClient(tenant.id, client.id));
         httpAssert.expectStatusCode(response, 200);
 
-        http = api.anonymousClient();
-        response = await http.postFormData(urls.token(), {
-            grant_type: 'password',
-            username: user.login,
-            password: password,
-            client_id: client.id,
-            client_secret: client.secret
-        });
+        response = await api.login(user.login, password, client.id, client.secret);
         httpAssert.expectStatusCode(response, 400);
     });
 
@@ -114,14 +128,7 @@ describe('Authentication', () => {
         response = await http.putJson(urls.adminUserPassword(tenant.id, user.id), { password: password });
         httpAssert.expectStatusCode(response, 200);
 
-        http = api.anonymousClient();
-        response = await http.postFormData(urls.token(), {
-            grant_type: 'password',
-            username: user.login,
-            password: password,
-            client_id: client.id,
-            client_secret: client.secret
-        });
+        response = await api.login(user.login, password, client.id, client.secret);
         httpAssert.expectStatusCode(response, 400);
     });
 
@@ -147,14 +154,7 @@ describe('Authentication', () => {
         response = await http.delete(urls.adminUser(tenant.id, user.id));
         httpAssert.expectStatusCode(response, 200);
 
-        http = api.anonymousClient();
-        response = await http.postFormData(urls.token(), {
-            grant_type: 'password',
-            username: user.login,
-            password: password,
-            client_id: client.id,
-            client_secret: client.secret
-        });
+        response = await api.login(user.login, password, client.id, client.secret);
         httpAssert.expectStatusCode(response, 400);
     });
 });

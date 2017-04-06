@@ -1,5 +1,6 @@
 import * as jwt from 'jsonwebtoken';
 import * as maybe from 'data.maybe';
+import * as _ from 'lodash';
 import { OAuthPersistence, ClientService, Client, UserService, User } from './persistence';
 import { HashAlgorithm } from './hashAlgorithm';
 //nasty hack to be able to report a different error to server
@@ -63,12 +64,15 @@ interface Credentials {
 export class OAuthModel {
     constructor(private persistence: OAuthPersistence, private hashAlgorithm: HashAlgorithm) { }
 
-    public generateAccessToken = async (client, user, scope) => {
-        const tokenPayload = {
-            'ni:tenantId': client.tenantId,
-            'ni:login': user.login,
-            'ni:userId': user.id
-        };
+    public generateAccessTokena = async (client, user, claims) => {
+        const tokenPayload = _(claims)
+            .indexBy(x => x.key)
+            .mapValues(x => x.value)
+            .value();
+
+        tokenPayload['ni:tenantId'] = client.tenantId;
+        tokenPayload['ni:login'] = user.login;
+        tokenPayload['ni:userId'] = user.id;
 
         return await jwtSign(tokenPayload);
     }
@@ -102,11 +106,14 @@ export class OAuthModel {
         if (user.isNothing) {
             throw new InvalidGrantError('Invalid username or password');
         }
+        const u = user.get();
+        const claims = await this.persistence.users.claimsForUser(client.tenantId, u.id);
+        const token = await this.generateAccessTokena(client, u, claims);
 
         return {
-            accessToken: accessToken.accessToken,
+            accessToken: token,
             client: client,
-            user: user.get()
+            user: u
         };
     }
 
