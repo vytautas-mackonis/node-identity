@@ -1,4 +1,5 @@
 import * as api from './infrastructure/api';
+import { HttpClient } from './infrastructure/httpClient';
 import * as urls from './infrastructure/urls';
 import * as httpAssert from './infrastructure/httpAssert';
 import { expect } from 'chai';
@@ -227,6 +228,37 @@ describe('Claim registration', () => {
 
         assertClaim(tenant.id, user.id, claim);
         assertNoClaim(tenant.id, user2.id, claim);
+    });
+
+    describe('After replacing claims for user', async () => {
+        let http: HttpClient;
+
+        const claims = [
+            data.randomClaim(),
+            data.randomClaim(),
+            data.randomClaim()
+        ];
+
+        before(async () => {
+            await api.dropDatabase();
+            http = await api.defaultAdminClient();
+            let response = await http.putJson(urls.tenant(tenant.id), tenant);
+            httpAssert.expectStatusCode(response, 201);
+            response = await http.putJson(urls.adminUser(tenant.id, user.id), user);
+            httpAssert.expectStatusCode(response, 201);
+            response = await http.putJson(urls.adminClaim(tenant.id, user.id, claim.key), {
+                value: claim.value
+            });
+            httpAssert.expectStatusCode(response, 201);
+        });
+
+        it('Should list only new claims when they are replaced using admin api', async () => {
+            let response = await http.putJson(urls.adminClaims(tenant.id, user.id), claims);
+            httpAssert.expectStatusCode(response, 200);
+            response = await http.getJson(urls.adminClaims(tenant.id, user.id));
+            httpAssert.expectStatusCode(response, 200);
+            expect(response.body).to.be.eql(claims);
+        })
     });
 });
 

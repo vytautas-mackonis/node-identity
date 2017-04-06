@@ -1,6 +1,6 @@
 import { Express } from 'express';
 import * as _ from 'lodash';
-import { UserService, User } from './persistence';
+import { UserService, Claim } from './persistence';
 import * as promisify from './promisify';
 
 interface ClaimSaveRequest {
@@ -19,6 +19,11 @@ export function configure(server: Express, repository: UserService) {
             value: claim.value
         });
         return { statusCode: created ? 201 : 200 };
+    }
+
+    async function replace(tenantId: string, userId: string, claims: Claim[]) {
+        await repository.replaceUserClaims(tenantId, userId, claims);
+        return { statusCode: 200 };
     }
 
     async function find(tenantId: string, userId: string, key: string) {
@@ -43,6 +48,12 @@ export function configure(server: Express, repository: UserService) {
     server.get('/admin/tenants/:tenantId/users/:userId/claims/:key',
         promisify.expressHandler(req =>
             find(req.params.tenantId, req.params.userId, req.params.key)
+        )
+    );
+
+    server.put('/admin/tenants/:tenantId/users/:userId/claims', 
+        promisify.expressHandler(req =>
+            replace(req.params.tenantId, req.params.userId, req.body)
         )
     );
 

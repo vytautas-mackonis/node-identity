@@ -113,7 +113,10 @@ export class MongoUserService implements UserService {
     }
 
     public async replaceUserClaims(tenantId: string, userId: string, claims: Claim[]): Promise<void> {
-
+        await this.claims.remove({ tenantId: tenantId, userId: userId });
+        for (let i = 0; i < claims.length; i++) {
+            await this.setUserClaim(tenantId, userId, claims[i]);
+        }
     }
 
     public async removeUserClaim(tenantId: string, userId: string, claimKey: string): Promise<void> {
