@@ -38,7 +38,6 @@ export interface ClientFilter {
 
 export interface ClientService {
     getById(id: string): Promise<maybe.Maybe<Client>>;
-    getByIdAndSecret(id: string, secret: string): Promise<maybe.Maybe<Client>>;
     query(filter: ClientFilter): Promise<Client[]>;
     save(id: string, client: ClientSaveRequest): Promise<boolean>;
     delete(id: string): Promise<void>;
@@ -65,8 +64,6 @@ export interface UserFilter {
 export interface UserService {
     query(filter: UserFilter): Promise<User[]>;
     getById(tenantId: string, id: string): Promise<maybe.Maybe<User>>;
-    getByEmail(tenantId: string, email: string): Promise<maybe.Maybe<User>>;
-    getByEmailAndLogin(tenantId: string, email: string, login: string): Promise<maybe.Maybe<User>>;
     getByLogin(tenantId: string, login: string): Promise<maybe.Maybe<User>>;
     getByPasswordResetToken(token: string): Promise<maybe.Maybe<User>>;
     save(tenantId: string, id: string, login: string, email: string, name: string): Promise<boolean>;

@@ -35,6 +35,7 @@ async function getClient(clientService: ClientService, hashAlgorithm: HashAlgori
     const client = await clientService.getById(clientId);
     if (client.isNothing) return null;
     const c = client.get();
+    if (!c.active) return null;
     if (await hashAlgorithm.verifyHash(c.secretHash, clientSecret)) {
         c['grants'] = ['password'];
         return c;

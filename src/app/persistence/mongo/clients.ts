@@ -65,10 +65,6 @@ export class MongoClientService implements ClientService {
         return maybe.Just(results[0]);
     }
 
-    public async getByIdAndSecret(id: string, secret: string) {
-        return maybe.Nothing<Client>();
-    }
-
     public async save(id: string, client: ClientSaveRequest) {
         let doc = toDocument(id, client);
         let saveResult = await this.clients.save(doc);

@@ -49,8 +49,8 @@ nconf.defaults({
 
         // respond with json
         if (req.accepts('json')) {
-        res.send({ error: 'Not found' });
-        return;
+            res.send({ error: 'Not found' });
+            return;
         }
 
         // default to plain-text. send()

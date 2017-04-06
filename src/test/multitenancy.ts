@@ -42,6 +42,7 @@ describe('Multitenancy', () => {
         for (let j = 0; j < tenants[i].clients.length; j++) {
             let client = tenants[i].clients[j];
             client.name = `Client ${j + 1} of tenant ${i + 1}`;
+            client.active = true;
         }
         
         for (let j = 0; j < tenants[i].users.length; j++) {

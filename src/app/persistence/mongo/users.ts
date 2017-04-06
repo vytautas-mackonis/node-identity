@@ -60,14 +60,6 @@ export class MongoUserService implements UserService {
         return arrayToMaybe(await this.query({ tenantId: tenantId, userId: id }));
     }
 
-    public async getByEmail(tenantId: string, email: string) {
-        return arrayToMaybe(await this.query({ tenantId: tenantId, email: email }));
-    }
-
-    public async getByEmailAndLogin(tenantId: string, email: string, login: string) {
-        return arrayToMaybe(await this.query({ tenantId: tenantId, email: email, login: login }));
-    }
-
     public async getByLogin(tenantId: string, login: string) {
         return arrayToMaybe(await this.query({ tenantId: tenantId, login: login }));
     }
