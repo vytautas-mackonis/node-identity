@@ -6,6 +6,7 @@ import * as uuid from 'node-uuid';
 import * as data from './infrastructure/data';
 import * as jwt from 'jsonwebtoken';
 import * as _ from 'lodash';
+import * as nconf from 'nconf';
 import { expect } from 'chai';
 
 describe('Authentication', () => {
@@ -72,7 +73,8 @@ describe('Authentication', () => {
         response = await api.login(user.login, password, client.id, client.secret);
         httpAssert.expectStatusCode(response, 200);
 
-        const tokenPayload = jwt.verify(response.body.access_token, 'secret');
+        const publicKey = nconf.get('jwtPublicKey');
+        const tokenPayload = jwt.verify(response.body.access_token, publicKey, { algorithms: ['RS256'] });
         delete tokenPayload.iat;
         delete tokenPayload.exp;
 

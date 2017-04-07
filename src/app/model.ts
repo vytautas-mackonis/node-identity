@@ -3,35 +3,8 @@ import * as maybe from 'data.maybe';
 import * as _ from 'lodash';
 import { OAuthPersistence, ClientService, Client, UserService, User } from './persistence';
 import { HashAlgorithm } from './hashAlgorithm';
-//nasty hack to be able to report a different error to server
-//const InvalidGrantError = require('express-oauth-server/node_modules/oauth2-server/lib/errors/invalid-grant-error');
+import { TokenProvider } from './token';
 const InvalidGrantError = require('oauth2-server/lib/errors/invalid-grant-error');
-
-const jwtSecret = 'secret';
-
-function jwtSign(payload: any) : Promise<string> {
-    return new Promise((resolve, reject) => {
-        jwt.sign(payload, jwtSecret, {}, (err, token) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(token);
-            }
-        });
-    });
-}
-
-function jwtVerify<T>(token: string) : Promise<T> {
-    return new Promise((resolve, reject) => {
-        jwt.verify(token, jwtSecret, {}, (err, payload) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(payload);
-            }
-        });
-    });
-}
 
 async function getClient(clientService: ClientService, hashAlgorithm: HashAlgorithm, clientId: string, clientSecret: string): Promise<Client> {
     const client = await clientService.getById(clientId);
@@ -63,7 +36,10 @@ interface Credentials {
 }
 
 export class OAuthModel {
-    constructor(private persistence: OAuthPersistence, private hashAlgorithm: HashAlgorithm) { }
+    constructor(
+        private persistence: OAuthPersistence,
+        private hashAlgorithm: HashAlgorithm,
+        private tokenProvider: TokenProvider) { }
 
     public generateAccessTokena = async (client, user, claims) => {
         const tokenPayload = _(claims)
@@ -75,11 +51,11 @@ export class OAuthModel {
         tokenPayload['ni:login'] = user.login;
         tokenPayload['ni:userId'] = user.id;
 
-        return await jwtSign(tokenPayload);
+        return await this.tokenProvider.sign(tokenPayload);
     }
 
     public getAccessToken = async (bearerToken) => {
-        const payload = await jwtVerify<any>(bearerToken);
+        const payload = await this.tokenProvider.verify<any>(bearerToken);
         const user = await this.persistence.users.getById(payload['ni:tenantId'], payload['ni:userId']);
         if (user.isNothing)
             return null;

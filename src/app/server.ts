@@ -11,6 +11,7 @@ import { Argon2HashAlgorithm } from './argon2HashAlgorithm';
 import * as _ from 'lodash';
 import { ExpressOAuthServer } from './express-oauth2';
 import { corsHandler } from './cors';
+import { JwtTokenProvider } from './jwt';
 
 
 let configured = false;
@@ -33,11 +34,18 @@ export async function start() {
     await persistence.initializer.initialize();
 
     const hashAlgorithm = new Argon2HashAlgorithm();
+    const tokenProvider = new JwtTokenProvider({
+        privateKey: nconf.get('jwtPrivateKey'),
+        publicKey: nconf.get('jwtPublicKey')
+    });
+
     const app = express();
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
 
-    const oauth = new ExpressOAuthServer({ model: new OAuthModel(persistence, hashAlgorithm) });
+    const oauth = new ExpressOAuthServer({ 
+        model: new OAuthModel(persistence, hashAlgorithm, tokenProvider)
+    });
 
     const allowedOrigin = nconf.get('allowedOrigin');
     const cors = corsHandler(allowedOrigin);
