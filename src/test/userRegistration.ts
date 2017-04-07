@@ -14,7 +14,7 @@ function assertUser(tenantId: string, user: data.User) {
         let response = await http.getJson(urls.adminUsers(tenantId));
         httpAssert.expectStatusCode(response, 200);
         let users = response.body;
-        _.remove(users, u => u.login === settings.defaultUsername);
+        _.remove<any>(users, u => u.login === settings.defaultUsername);
         expect(users).to.eql([
             user
         ]);
@@ -35,7 +35,7 @@ describe('User registration', () => {
 
     describe('After registering a user', () => {
         before(async () => {
-            await api.dropDatabase();
+            await api.reset();
             http = await api.defaultAdminClient();
             let response = await http.putJson(urls.tenant(tenant.id), tenant);
             httpAssert.expectStatusCode(response, 201);
@@ -80,7 +80,7 @@ describe('User registration', () => {
 
     describe('After registering and updating a user', () => {
         before(async () => {
-            await api.dropDatabase();
+            await api.reset();
             let http = await api.defaultAdminClient();
             let response = await http.putJson(urls.tenant(tenant.id), tenant);
             httpAssert.expectStatusCode(response, 201);
@@ -102,7 +102,7 @@ describe('User registration', () => {
         const deleted = data.randomUser();
 
         before(async () => {
-            await api.dropDatabase();
+            await api.reset();
             let http = await api.defaultAdminClient();
             let response = await http.putJson(urls.tenant(tenant.id), tenant);
             httpAssert.expectStatusCode(response, 201);

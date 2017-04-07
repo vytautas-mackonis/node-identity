@@ -50,7 +50,7 @@ describe('Claim registration', () => {
 
     describe('After adding a claim', () => {
         before(async () => {
-            await api.dropDatabase();
+            await api.reset();
             let http = await api.defaultAdminClient();
             let response = await http.putJson(urls.tenant(tenant.id), tenant);
             httpAssert.expectStatusCode(response, 201);
@@ -67,7 +67,7 @@ describe('Claim registration', () => {
 
     describe('After registering and updating a claim', () => {
         before(async () => {
-            await api.dropDatabase();
+            await api.reset();
             let http = await api.defaultAdminClient();
             let response = await http.putJson(urls.tenant(tenant.id), tenant);
             httpAssert.expectStatusCode(response, 201);
@@ -90,7 +90,7 @@ describe('Claim registration', () => {
         const deleted = data.randomClaim();
 
         before(async () => {
-            await api.dropDatabase();
+            await api.reset();
             let http = await api.defaultAdminClient();
             let response = await http.putJson(urls.tenant(tenant.id), tenant);
             httpAssert.expectStatusCode(response, 201);
@@ -123,7 +123,7 @@ describe('Claim registration', () => {
         const claim3 = data.randomClaim();
 
         before(async () => {
-            await api.dropDatabase();
+            await api.reset();
             const http = await api.defaultAdminClient();
             let response = await http.putJson(urls.tenant(tenant.id), tenant);
             httpAssert.expectStatusCode(response, 201);
@@ -177,7 +177,7 @@ describe('Claim registration', () => {
         claim2.key = claim.key;
 
         before(async () => {
-            await api.dropDatabase();
+            await api.reset();
             const http = await api.defaultAdminClient();
             let response = await http.putJson(urls.tenant(tenant.id), tenant);
             httpAssert.expectStatusCode(response, 201);
@@ -207,7 +207,7 @@ describe('Claim registration', () => {
         const user2 = data.randomUser();
 
         before(async () => {
-            await api.dropDatabase();
+            await api.reset();
             const http = await api.defaultAdminClient();
             let response = await http.putJson(urls.tenant(tenant.id), tenant);
             httpAssert.expectStatusCode(response, 201);
@@ -240,7 +240,7 @@ describe('Claim registration', () => {
         ];
 
         before(async () => {
-            await api.dropDatabase();
+            await api.reset();
             http = await api.defaultAdminClient();
             let response = await http.putJson(urls.tenant(tenant.id), tenant);
             httpAssert.expectStatusCode(response, 201);

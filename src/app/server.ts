@@ -8,7 +8,9 @@ import * as users from './users';
 import * as claims from './claims';
 import * as MongoOAuthPersistenceFactory from './persistence/mongo/index';
 import { Argon2HashAlgorithm } from './argon2HashAlgorithm';
-const o = require('express-oauth-server');
+import * as _ from 'lodash';
+import { ExpressOAuthServer } from './express-oauth2';
+import { corsHandler } from './cors';
 
 
 let configured = false;
@@ -17,28 +19,31 @@ let server = null;
 export async function start() {
     if (!configured) {
         configured = true;
-        
-nconf.argv();
-nconf.file('conf/config.json');
+                
+        nconf.argv();
+        nconf.file('conf/config.json');
 
-nconf.defaults({
-    port: 3000
-});
+        nconf.defaults({
+            port: 3000,
+            allowedOrigin: '*'
+        });
     }
+
     const persistence = await MongoOAuthPersistenceFactory.create(nconf.get('mongoDbUrl'));
     await persistence.initializer.initialize();
 
     const hashAlgorithm = new Argon2HashAlgorithm();
-    
     const app = express();
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
-     
-    const oauth = new o({
-        model: new OAuthModel(persistence, hashAlgorithm) 
-    });
 
-    app.use('/token', oauth.token());
+    const oauth = new ExpressOAuthServer({ model: new OAuthModel(persistence, hashAlgorithm) });
+
+    const allowedOrigin = nconf.get('allowedOrigin');
+    const cors = corsHandler(allowedOrigin);
+    app.options('*', cors.preflight);
+    app.use('/token', oauth.token(cors.clientHandler));
+    app.use(cors.postflight);
     app.use(oauth.authenticate());
 
     tenants.configure(app, persistence.tenants);

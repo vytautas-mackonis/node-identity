@@ -13,7 +13,7 @@ function assertTenant(tenant: data.Tenant) {
         let response = await client.getJson(urls.tenants());
         httpAssert.expectStatusCode(response, 200);
         let tenants = response.body;
-        _.remove(tenants, t => t.id == settings.adminTenant);
+        _.remove<any>(tenants, t => t.id == settings.adminTenant);
 
         expect(tenants).to.eql([
             tenant
@@ -33,7 +33,7 @@ describe('Tenant registration', () => {
     
     describe('After registering a tenant', () => {
         before(async () => {
-            await api.dropDatabase();
+            await api.reset();
             let client = await api.defaultAdminClient();
             let response = await client.putJson(urls.tenant(tenant.id), {
                 name: tenant.name
@@ -46,7 +46,7 @@ describe('Tenant registration', () => {
 
     describe('After registering and updating a tenant', () => {
         before(async () => {
-            await api.dropDatabase();
+            await api.reset();
             let client = await api.defaultAdminClient();
             let response = await client.putJson(urls.tenant(tenant.id), {
                 name: uuid.v4()
@@ -63,7 +63,7 @@ describe('Tenant registration', () => {
         const deleted = data.randomTenant();
 
         before(async () => {
-            await api.dropDatabase();
+            await api.reset();
             let client = await api.defaultAdminClient();
             let response = await client.putJson(urls.tenant(tenant.id), {
                 name: tenant.name

@@ -37,14 +37,26 @@ export class HttpClient {
             simple: false
         });
     }
+    
+    public request<T>(method: string, path: string, data?: T, headers?: { [key: string]: string }) {
+        return rp({
+            method: method,
+            uri: this.baseUrl + path,
+            body: data,
+            resolveWithFullResponse: true,
+            headers: Object.assign({}, this.headers, headers),
+            json: true,
+            simple: false
+        });
+    }
 
-    public postFormData<T>(path: string, data: T) {
+    public postFormData<T>(path: string, data: T, headers?: { [key: string]: string }) {
         return rp({
             method: 'POST',
             uri: this.baseUrl + path,
             form: data,
             resolveWithFullResponse: true,
-            headers: this.headers,
+            headers: Object.assign({}, this.headers, headers),
             json: true,
             simple: false
         });
@@ -57,6 +69,17 @@ export class HttpClient {
             resolveWithFullResponse: true,
             headers: this.headers,
             json: true,
+            simple: false
+        });
+    }
+
+    public options(path: string, headers: { [key: string]: string }) {
+        let actualHeaders = Object.assign({}, this.headers, headers);
+        return rp({
+            method: 'OPTIONS',
+            uri: this.baseUrl + path,
+            resolveWithFullResponse: true,
+            headers: actualHeaders,
             simple: false
         });
     }

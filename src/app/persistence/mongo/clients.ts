@@ -1,6 +1,6 @@
 import { Db, Collection } from 'mongodb';
 import * as _ from 'lodash';
-import { Client, ClientSaveRequest, ClientFilter, ClientService } from '../../persistence';
+import { Client, ClientFilter, ClientService } from '../../persistence';
 import * as maybe from 'data.maybe';
 
 interface ClientDocument {
@@ -14,7 +14,7 @@ interface ClientDocument {
     tenantId: string;
 }
 
-function toDocument(id: string, client: ClientSaveRequest) : ClientDocument {
+function toDocument(id: string, client: Client) : ClientDocument {
     return {
         _id: id,
         active: client.active,
@@ -65,7 +65,7 @@ export class MongoClientService implements ClientService {
         return maybe.Just(results[0]);
     }
 
-    public async save(id: string, client: ClientSaveRequest) {
+    public async save(id: string, client: Client) {
         let doc = toDocument(id, client);
         let saveResult = await this.clients.save(doc);
         return saveResult.result.upserted && saveResult.result.upserted.length > 0;

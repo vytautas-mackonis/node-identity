@@ -55,7 +55,7 @@ export function configure(server: Express, repository: ClientService, hashAlgori
 
     server.get('/clients/:id',
         promisify.expressHandler((req, resp) => {
-            return find(resp.locals.oauth.token.user.tenantId, req.params.id);
+            return find(resp.locals.oauth.user.tenantId, req.params.id);
         }
         )
     );
@@ -68,7 +68,7 @@ export function configure(server: Express, repository: ClientService, hashAlgori
 
     server.get('/clients',
         promisify.expressHandler((req, resp) =>
-            list(resp.locals.oauth.token.user.tenantId)
+            list(resp.locals.oauth.user.tenantId)
         )
     );
 

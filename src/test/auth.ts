@@ -55,7 +55,7 @@ describe('Authentication', () => {
             data.randomClaim()
         ];
 
-        await api.dropDatabase();
+        await api.reset();
         let http = await api.defaultAdminClient();
         let response = await http.putJson(urls.tenant(tenant.id), tenant);
         httpAssert.expectStatusCode(response, 201);
@@ -76,7 +76,7 @@ describe('Authentication', () => {
         delete tokenPayload.iat;
         delete tokenPayload.exp;
 
-        let expectedPayload = _.chain(claims).indexBy(x => x.key).mapValues(x => x.value).value();
+        let expectedPayload = _.chain(claims).keyBy(x => x.key).mapValues((x:any) => x.value).value();
         expectedPayload['ni:tenantId'] = tenant.id;
         expectedPayload['ni:userId'] = user.id;
         expectedPayload['ni:login'] = user.login;
@@ -90,7 +90,7 @@ describe('Authentication', () => {
         client.active = true;
         const user = data.randomUser();
 
-        await api.dropDatabase();
+        await api.reset();
         let http = await api.defaultAdminClient();
         let response = await http.putJson(urls.tenant(tenant.id), tenant);
         httpAssert.expectStatusCode(response, 201);
@@ -116,7 +116,7 @@ describe('Authentication', () => {
         client.active = false;
         const user = data.randomUser();
 
-        await api.dropDatabase();
+        await api.reset();
         let http = await api.defaultAdminClient();
         let response = await http.putJson(urls.tenant(tenant.id), tenant);
         httpAssert.expectStatusCode(response, 201);
@@ -139,7 +139,7 @@ describe('Authentication', () => {
         client.active = true;
         const user = data.randomUser();
 
-        await api.dropDatabase();
+        await api.reset();
         let http = await api.defaultAdminClient();
         let response = await http.putJson(urls.tenant(tenant.id), tenant);
         httpAssert.expectStatusCode(response, 201);

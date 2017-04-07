@@ -4,7 +4,8 @@ import * as _ from 'lodash';
 import { OAuthPersistence, ClientService, Client, UserService, User } from './persistence';
 import { HashAlgorithm } from './hashAlgorithm';
 //nasty hack to be able to report a different error to server
-const InvalidGrantError = require('express-oauth-server/node_modules/oauth2-server/lib/errors/invalid-grant-error');
+//const InvalidGrantError = require('express-oauth-server/node_modules/oauth2-server/lib/errors/invalid-grant-error');
+const InvalidGrantError = require('oauth2-server/lib/errors/invalid-grant-error');
 
 const jwtSecret = 'secret';
 
@@ -37,7 +38,7 @@ async function getClient(clientService: ClientService, hashAlgorithm: HashAlgori
     if (client.isNothing) return null;
     const c = client.get();
     if (!c.active) return null;
-    if (await hashAlgorithm.verifyHash(c.secretHash, clientSecret)) {
+    if (c.applicationType == 'Public' || await hashAlgorithm.verifyHash(c.secretHash, clientSecret)) {
         c['grants'] = ['password'];
         return c;
     } 
@@ -66,8 +67,8 @@ export class OAuthModel {
 
     public generateAccessTokena = async (client, user, claims) => {
         const tokenPayload = _(claims)
-            .indexBy(x => x.key)
-            .mapValues(x => x.value)
+            .keyBy(x => x.key)
+            .mapValues((x:any) => x.value)
             .value();
 
         tokenPayload['ni:tenantId'] = client.tenantId;

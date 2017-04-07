@@ -13,7 +13,7 @@ function assertClient(tenantId: string, client: data.Client) {
         let response = await http.getJson(urls.adminClients(tenantId));
         httpAssert.expectStatusCode(response, 200);
         let clients = response.body;
-        _.remove(clients, c => c.id === settings.adminClientId);
+        _.remove<any>(clients, c => c.id === settings.adminClientId);
         expect(clients).to.eql([
             client
         ]);
@@ -34,7 +34,7 @@ describe('Client registration', () => {
         const client = data.randomClient();
 
         before(async () => {
-            await api.dropDatabase();
+            await api.reset();
             let http = await api.defaultAdminClient();
             let response = await http.putJson(urls.tenant(tenant.id), tenant);
             httpAssert.expectStatusCode(response, 201);
@@ -52,7 +52,7 @@ describe('Client registration', () => {
         const client = data.randomClient();
 
         before(async () => {
-            await api.dropDatabase();
+            await api.reset();
             let http = await api.defaultAdminClient();
             let response = await http.putJson(urls.tenant(tenant.id), tenant);
             httpAssert.expectStatusCode(response, 201);
@@ -81,7 +81,7 @@ describe('Client registration', () => {
         const deleted = data.randomClient();
         
         before(async () => {
-            await api.dropDatabase();
+            await api.reset();
             let http = await api.defaultAdminClient();
             let response = await http.putJson(urls.tenant(tenant.id), tenant);
             httpAssert.expectStatusCode(response, 201);

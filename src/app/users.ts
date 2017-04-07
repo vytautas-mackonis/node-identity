@@ -71,7 +71,7 @@ export function configure(server: Express, repository: UserService, hashAlgorith
 
     server.get('/users/:id',
         promisify.expressHandler((req, resp) =>
-            find(resp.locals.oauth.token.user.tenantId, req.params.id)
+            find(resp.locals.oauth.user.tenantId, req.params.id)
         )
     );
 
@@ -80,7 +80,7 @@ export function configure(server: Express, repository: UserService, hashAlgorith
     );
 
     server.get('/users',
-        promisify.expressHandler((req, resp) => list(resp.locals.oauth.token.user.tenantId))
+        promisify.expressHandler((req, resp) => list(resp.locals.oauth.user.tenantId))
     );
 
     server.delete('/admin/tenants/:tenantId/users/:id',

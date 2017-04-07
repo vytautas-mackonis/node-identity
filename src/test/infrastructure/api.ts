@@ -16,7 +16,7 @@ export async function start() {
     db = await MongoClient.connect(dbUrl);
 }
 
-export async function dropDatabase() {
+export async function reset() {
     server.stop();
     await db.dropDatabase();
     await server.start();
@@ -26,11 +26,11 @@ export function baseUrl() {
     return `http://localhost:${nconf.get('port')}/`;
 }
 
-export function anonymousClient() {
-    return new HttpClient(baseUrl());
+export function anonymousClient(headers?: { [key:string]: string }) {
+    return new HttpClient(baseUrl(), headers);
 }
 
-export async function login(username: string, password: string, clientId: string, clientSecret: string) {
+export async function login(username: string, password: string, clientId: string, clientSecret: string, headers?: { [key: string]: string }) {
     let client = anonymousClient();
     let response = await client.postFormData(urls.token(), {
         grant_type: 'password',
@@ -38,7 +38,7 @@ export async function login(username: string, password: string, clientId: string
         password: password,
         client_id: clientId,
         client_secret: clientSecret
-    });
+    }, headers);
     return response;
 }
 

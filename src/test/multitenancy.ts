@@ -52,7 +52,7 @@ describe('Multitenancy', () => {
     }
 
     before(async () => {
-        await api.dropDatabase();
+        await api.reset();
         const http = await api.defaultAdminClient();
 
         for (let i = 0; i < tenants.length; i++) {
