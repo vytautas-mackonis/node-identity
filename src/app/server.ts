@@ -26,14 +26,22 @@ export async function start() {
 
         nconf.defaults({
             port: 3000,
-            allowedOrigin: '*'
+            allowedOrigin: '*',
+            argon2TimeCost: 3,
+            argon2MemoryCost: 14,
+            argon2Parallelism: 1
         });
     }
 
     const persistence = await MongoOAuthPersistenceFactory.create(nconf.get('mongoDbUrl'));
     await persistence.initializer.initialize();
 
-    const hashAlgorithm = new Argon2HashAlgorithm();
+    const hashAlgorithm = new Argon2HashAlgorithm({
+        timeCost: nconf.get('argon2TimeCost'),
+        memoryCost: nconf.get('argon2MemoryCost'),
+        parallelism: nconf.get('argon2Parallelism')
+    });
+
     const tokenProvider = new JwtTokenProvider({
         privateKey: nconf.get('jwtPrivateKey'),
         publicKey: nconf.get('jwtPublicKey')
