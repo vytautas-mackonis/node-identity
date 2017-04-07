@@ -29,7 +29,8 @@ export async function start() {
             allowedOrigin: '*',
             argon2TimeCost: 3,
             argon2MemoryCost: 14,
-            argon2Parallelism: 1
+            argon2Parallelism: 1,
+            accessTokenExpirationSeconds: 10 * 60
         });
     }
 
@@ -44,7 +45,8 @@ export async function start() {
 
     const tokenProvider = new JwtTokenProvider({
         privateKey: nconf.get('jwtPrivateKey'),
-        publicKey: nconf.get('jwtPublicKey')
+        publicKey: nconf.get('jwtPublicKey'),
+        expirationSeconds: nconf.get('accessTokenExpirationSeconds')
     });
 
     const app = express();

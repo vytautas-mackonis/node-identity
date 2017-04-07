@@ -8,6 +8,7 @@ import * as jwt from 'jsonwebtoken';
 import * as _ from 'lodash';
 import * as nconf from 'nconf';
 import { expect } from 'chai';
+import { delay } from './infrastructure/utils';
 
 describe('Authentication', () => {
     function shouldFailToLogin(grantType: string, user: string, password: string, clientId: string, clientSecret: string) {
@@ -158,5 +159,17 @@ describe('Authentication', () => {
 
         response = await api.login(user.login, password, client.id, client.secret);
         httpAssert.expectStatusCode(response, 400);
+    });
+
+    it('Should expire issued tokens', async () => {
+        let previousExp = nconf.get('accessTokenExpirationSeconds');
+        nconf.set('accessTokenExpirationSeconds', 1);
+        await api.reset();
+        nconf.set('accessTokenExpirationSeconds', previousExp);
+        const http = await api.defaultAdminClient();
+        await delay(1100);
+
+        const response = await http.getJson(urls.tenants());
+        httpAssert.expectStatusCode(response, 401);
     });
 });

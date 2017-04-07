@@ -59,9 +59,10 @@ export class OAuthModel {
         const user = await this.persistence.users.getById(payload['ni:tenantId'], payload['ni:userId']);
         if (user.isNothing)
             return null;
+
         return {
             user: user.get(),
-            expires: payload.exp
+            accessTokenExpiresAt: new Date(payload.exp * 1000)
         };
     }
 
