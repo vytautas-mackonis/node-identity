@@ -1,0 +1,27 @@
+{
+    "name": "Node-identity-build",
+    "group": "Node-identity",
+    "enable_pipeline_locking": true,
+    "environment_variables": [],
+    "materials": [
+        {
+            "url": "git@github.com:vytautas-mackonis/node-identity.git",
+            "type": "git",
+            "name": "node-identity"
+        }
+    ],
+    "stages": [
+        {
+            "name": "build",
+            "jobs": [
+                "name": "build",
+                "tasks": [
+                    {
+                        "type": "exec",
+                        "command": "dir"
+                    }
+                ]
+            ]
+        }
+    ]
+}
