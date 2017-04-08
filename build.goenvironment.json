@@ -1,0 +1,6 @@
+{
+    "name": "build-ubuntu-xenial",
+    "pipelines": [
+        "Node-identity-build"
+    ]
+}
