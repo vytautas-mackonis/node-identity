@@ -10,6 +10,7 @@ import { MongoClient, Db } from 'mongodb';
 let db: Db;
 
 export async function start() {
+    nconf.env();
     nconf.file('testconfig', 'conf/config_test.json');
     await server.start();
     const dbUrl = nconf.get('mongoDbUrl');

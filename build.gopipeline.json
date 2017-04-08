@@ -19,7 +19,7 @@
                     "tasks": [
                         {
                             "type": "exec",
-                            "command": "dir"
+                            "command": "mongoDbUrl=mongodb://mongodb:27017/test_identity gulp test"
                         }
                     ]
                 }
