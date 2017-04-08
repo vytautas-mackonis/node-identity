@@ -1,4 +1,6 @@
 {
     "port": 3000,
-    "mongoDbUrl": "mongodb://localhost:27017/identity"
+    "mongoHost": "localhost",
+    "mongoPort": "27017",
+    "mongoDatabase": "identity"
 }

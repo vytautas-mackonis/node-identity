@@ -34,7 +34,8 @@ export async function start() {
         });
     }
 
-    const persistence = await MongoOAuthPersistenceFactory.create(nconf.get('mongoDbUrl'));
+    const mongoDbUrl = `mongodb://${nconf.get('mongoHost')}:${nconf.get('mongoPort')}/${nconf.get('mongoDatabase')}`;
+    const persistence = await MongoOAuthPersistenceFactory.create(mongoDbUrl);
     await persistence.initializer.initialize();
 
     const hashAlgorithm = new Argon2HashAlgorithm({

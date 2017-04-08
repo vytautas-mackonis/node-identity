@@ -19,7 +19,14 @@
                     "tasks": [
                         {
                             "type": "exec",
-                            "command": "mongoDbUrl=mongodb://mongodb:27017/test_identity gulp test"
+                            "command": "npm",
+                            "arguments": [ "install" ]
+                        },
+                        {
+                            "type": "exec",
+                            "run_if": "passed",
+                            "command": "gulp",
+                            "arguments": [ "test" ]
                         }
                     ]
                 }

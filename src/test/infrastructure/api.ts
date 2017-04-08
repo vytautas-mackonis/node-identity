@@ -13,7 +13,7 @@ export async function start() {
     nconf.env();
     nconf.file('testconfig', 'conf/config_test.json');
     await server.start();
-    const dbUrl = nconf.get('mongoDbUrl');
+    const dbUrl = `mongodb://${nconf.get('mongoHost')}:${nconf.get('mongoPort')}/${nconf.get('mongoDatabase')}`;
     db = await MongoClient.connect(dbUrl);
 }
 
