@@ -14,13 +14,15 @@
         {
             "name": "build",
             "jobs": [
-                "name": "build",
-                "tasks": [
-                    {
-                        "type": "exec",
-                        "command": "dir"
-                    }
-                ]
+                {
+                    "name": "build",
+                    "tasks": [
+                        {
+                            "type": "exec",
+                            "command": "dir"
+                        }
+                    ]
+                }
             ]
         }
     ]
