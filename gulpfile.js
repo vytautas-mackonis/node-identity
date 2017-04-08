@@ -29,7 +29,7 @@ gulp.task('build', () => {
 
 gulp.task('test', ['build'], () => {
     return gulp.src(['dist/test/**/*.js'], { read: false })
-        .pipe(mocha({ reporter: 'spec' }));
+        .pipe(mocha({ reporter: 'mocha-jenkins-reporter' }));
 });
 
 gulp.task('watch', ['server'], () => {

@@ -2,7 +2,12 @@
     "name": "Node-identity-build",
     "group": "Node-identity",
     "enable_pipeline_locking": true,
-    "environment_variables": [],
+    "environment_variables": [
+        {
+            "name": "JUNIT_REPORT_PATH",
+            "value": "test_report.xml"
+        }
+    ],
     "materials": [
         {
             "url": "git@github.com:vytautas-mackonis/node-identity.git",
@@ -27,6 +32,13 @@
                             "run_if": "passed",
                             "command": "gulp",
                             "arguments": [ "test" ]
+                        }
+                    ],
+                    "artifacts": [
+                        {
+                            "source": "test_report.xml",
+                            "destination": "test_reports",
+                            "type": "test"
                         }
                     ]
                 }
