@@ -31,7 +31,7 @@
                     "artifacts": [
                         {
                             "source": "*.deb",
-                            "destination": ".",
+                            "destination": "",
                             "type": "build"
                         },
                         {
