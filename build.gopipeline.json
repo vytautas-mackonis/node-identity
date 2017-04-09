@@ -36,6 +36,11 @@
                     ],
                     "artifacts": [
                         {
+                            "source": "dist/**",
+                            "destination": "app",
+                            "type": "build"
+                        },
+                        {
                             "source": "test_report.xml",
                             "destination": "test_reports",
                             "type": "test"
