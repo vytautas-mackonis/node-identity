@@ -24,37 +24,14 @@
                     "tasks": [
                         {
                             "type": "exec",
-                            "command": "npm",
-                            "arguments": [ "install" ]
-                        },
-                        {
-                            "type": "exec",
-                            "run_if": "passed",
-                            "command": "gulp",
-                            "arguments": [ "test" ]
-                        },
-                        {
-                            "type": "exec",
-                            "run_if": "passed",
-                            "command": "npm",
-                            "arguments": [ "prune", "--production" ]
-                        },
-                        {
-                            "type": "exec",
-                            "run_if": "passed",
-                            "command": "npm",
-                            "arguments": [ "prune", "--production" ]
+                            "command": "build.sh",
+                            "arguments": []
                         }
                     ],
                     "artifacts": [
                         {
-                            "source": "dist/app/*",
-                            "destination": "app",
-                            "type": "build"
-                        },
-                        {
-                            "source": "node_modules",
-                            "destination": "app",
+                            "source": "*.deb",
+                            "destination": ".",
                             "type": "build"
                         },
                         {

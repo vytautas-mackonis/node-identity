@@ -1,10 +1,12 @@
 {
   "name": "node-identity",
-  "version": "1.0.0",
-  "description": "",
+  "author": "vytautas-mackonis",
+  "version": "0.0.1",
+  "description": "node-identity",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node dist/app/index.js"
   },
   "author": "",
   "license": "ISC",
@@ -41,6 +43,7 @@
     "gulp-typescript": "^3.1.6",
     "mocha": "^3.2.0",
     "mocha-jenkins-reporter": "^0.3.7",
+    "node-deb": "^0.8.0",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.3",
     "typescript": "^2.2.2"
