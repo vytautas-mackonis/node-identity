@@ -32,12 +32,23 @@
                             "run_if": "passed",
                             "command": "gulp",
                             "arguments": [ "test" ]
+                        },
+                        {
+                            "type": "exec",
+                            "run_if": "passed",
+                            "command": "npm",
+                            "arguments": [ "prune", "--production" ]
                         }
                     ],
                     "artifacts": [
                         {
-                            "source": "dist/**",
+                            "source": "dist/app",
                             "destination": "app",
+                            "type": "build"
+                        },
+                        {
+                            "source": "node_modules",
+                            "destination": "node_modules",
                             "type": "build"
                         },
                         {
