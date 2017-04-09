@@ -30,7 +30,7 @@
                     ],
                     "artifacts": [
                         {
-                            "source": "*.deb",
+                            "source": "node-identity.deb",
                             "destination": "",
                             "type": "build"
                         },
