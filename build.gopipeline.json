@@ -24,8 +24,8 @@
                     "tasks": [
                         {
                             "type": "exec",
-                            "command": "build.sh",
-                            "arguments": []
+                            "command": "/bin/bash",
+                            "arguments": [ "build.sh" ]
                         }
                     ],
                     "artifacts": [
