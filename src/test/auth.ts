@@ -22,7 +22,7 @@ describe('Authentication', () => {
                 client_secret: clientSecret
             });
 
-            httpAssert.expectStatusCode(response, 400);
+            httpAssert.expectStatusCode(response, 1);
         });
     }
 
