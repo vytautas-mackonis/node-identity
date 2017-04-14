@@ -26,6 +26,7 @@ export class ExpressOAuthServer {
                 const token = await this.server.token(request, response);
                 res.locals.oauth = token;
                 applyHeaders(req, res);
+                token.validate();
                 return { statusCode: response.status, body: response.body, headers: response.headers };
             } catch(e) {
                 return this.handleError(e, req, res, response);

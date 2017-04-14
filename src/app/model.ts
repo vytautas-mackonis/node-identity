@@ -82,8 +82,14 @@ export class OAuthModel {
     public saveToken = async (accessToken, client, credentials: Credentials) => {
         const user = await getUser(this.persistence.users, this.hashAlgorithm, client.tenantId, credentials.username, credentials.password);
         if (user.isNothing) {
-            throw new InvalidGrantError('Invalid username or password');
+            return {
+                accessToken: 'invalid',
+                client: client,
+                user: 'invalid',
+                validate: () => { throw new InvalidGrantError('Invalid username or password'); }
+            };
         }
+
         const u = user.get();
         const claims = await this.persistence.users.claimsForUser(client.tenantId, u.id);
         const token = await this.generateAccessTokena(client, u, claims);
@@ -91,7 +97,8 @@ export class OAuthModel {
         return {
             accessToken: token,
             client: client,
-            user: u
+            user: u,
+            validate: () => {}
         };
     }
 

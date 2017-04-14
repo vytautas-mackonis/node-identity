@@ -248,6 +248,30 @@ describe('CORS', () => {
                     expect(responseHeaders).to.have.property('access-control-allow-origin', origin);
                 });
             }
+            
+            function invalidPasswordLoginRequestCanBeSent(origin: string) {
+                it(`Should allow origin ${origin} for login`, async () => {
+                    let headers = [
+                        'accept',
+                        'connection',
+                        'content-length',
+                        'content-type',
+                        'host',
+                        'origin'
+                    ].join(', ');
+
+                    let response = await api.login(user.login, 'something else', client.id, 'whatever', {
+                        'Origin': origin
+                    });
+
+                    let responseHeaders = _.transform(response.headers, (result, val, key:any) => {
+                        result[key.toLowerCase()] = val;
+                    });
+                    expect(responseHeaders).to.have.property('access-control-allow-credentials', 'true');
+                    expect(responseHeaders).to.have.property('access-control-allow-headers', headers);
+                    expect(responseHeaders).to.have.property('access-control-allow-origin', origin);
+                });
+            }
 
             function loginRequestCannotBeSent(origin: string) {
                 it(`Should not allow origin ${origin} for login`, async () => {
@@ -271,6 +295,7 @@ describe('CORS', () => {
 
             for (let i = 0; i < validOrigins.length; i++) {
                 loginRequestCanBeSent(validOrigins[i]);
+                invalidPasswordLoginRequestCanBeSent(validOrigins[i]);
             }
 
             for (let i = 0; i < invalidOrigins.length; i++) {
