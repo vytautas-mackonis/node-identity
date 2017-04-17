@@ -69,7 +69,10 @@ export class OAuthModel {
     constructor(
         private persistence: OAuthPersistence,
         private hashAlgorithm: HashAlgorithm,
-        private tokenProvider: TokenProvider) { }
+        private tokenProvider: TokenProvider,
+        private accessTokenExpirationSeconds: number,
+        private refreshTokenExpirationSeconds: number
+    ) { }
 
     public generateAccessTokena = async (client, user, claims) => {
         const tokenPayload = _(claims)
@@ -81,20 +84,17 @@ export class OAuthModel {
         tokenPayload['ni:login'] = user.login;
         tokenPayload['ni:userId'] = user.id;
 
-        return await this.tokenProvider.sign(tokenPayload);
+        return await this.tokenProvider.sign(tokenPayload, this.accessTokenExpirationSeconds);
     }
 
     private makeRefreshToken = async (client, user) => {
-        const now = +new Date();
-        const tokenExpiration = Math.floor(now / 1000) + 15 * 60;
-
         const payload = {
             tenantId: client.tenantId,
             clientId: client.id,
             userId: user.id,
         };
 
-        return await this.tokenProvider.sign(payload);
+        return await this.tokenProvider.sign(payload, this.refreshTokenExpirationSeconds);
     }
 
     public getAccessToken = async (bearerToken) => {

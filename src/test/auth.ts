@@ -181,6 +181,6 @@ describe('Authentication', () => {
             const response = await http.getJson(urls.tenants());
             httpAssert.expectStatusCode(response, 401);
         });
-    })
+    });
 
 });

@@ -6,7 +6,6 @@ import * as _ from 'lodash';
 export interface JwtOptions {
     privateKey: string;
     publicKey: string;
-    expirationSeconds: number;
 }
 
 export class JwtTokenProvider implements TokenProvider {
@@ -17,12 +16,12 @@ export class JwtTokenProvider implements TokenProvider {
             throw new Error('JWT public key must be a PEM encoded string');
     }
 
-    sign(payload: any): Promise<string> {
-        jwt.sign(payload, this.options.privateKey, { algorithm: 'RS256', expiresIn: this.options.expirationSeconds });
+    sign(payload: any, expiresIn: number): Promise<string> {
+        jwt.sign(payload, this.options.privateKey, { algorithm: 'RS256', expiresIn: expiresIn });
 
         return new Promise((resolve, reject) => {
             try {
-                jwt.sign(payload, this.options.privateKey, { algorithm: 'RS256', expiresIn: this.options.expirationSeconds }, (err, token) => {
+                jwt.sign(payload, this.options.privateKey, { algorithm: 'RS256', expiresIn: expiresIn }, (err, token) => {
                     if (err) {
                         reject(err);
                     } else {

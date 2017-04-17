@@ -1,4 +1,4 @@
 export interface TokenProvider {
-    sign(payload: any): Promise<string>;
+    sign(payload: any, expiresIn: number): Promise<string>;
     verify<T>(token: string): Promise<T>;
 }

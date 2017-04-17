@@ -25,7 +25,8 @@ export async function start() {
         argon2TimeCost: 3,
         argon2MemoryCost: 14,
         argon2Parallelism: 1,
-        accessTokenExpirationSeconds: 10 * 60
+        accessTokenExpirationSeconds: 10 * 60,
+        refreshTokenExpirationSeconds: 60 * 60
     });
 
     const mongoDbUrl = `mongodb://${nconf.get('mongoHost')}:${nconf.get('mongoPort')}/${nconf.get('mongoDatabase')}`;
@@ -40,8 +41,7 @@ export async function start() {
 
     const tokenProvider = new JwtTokenProvider({
         privateKey: nconf.get('jwtPrivateKey'),
-        publicKey: nconf.get('jwtPublicKey'),
-        expirationSeconds: nconf.get('accessTokenExpirationSeconds')
+        publicKey: nconf.get('jwtPublicKey')
     });
 
     const app = express();
@@ -49,7 +49,13 @@ export async function start() {
     app.use(bodyParser.json());
 
     const oauth = new ExpressOAuthServer({ 
-        model: new OAuthModel(persistence, hashAlgorithm, tokenProvider)
+        model: new OAuthModel(
+            persistence,
+            hashAlgorithm,
+            tokenProvider,
+            nconf.get('accessTokenExpirationSeconds'),
+            nconf.get('refreshTokenExpirationSeconds')
+        )
     });
 
     const allowedOrigin = nconf.get('allowedOrigin');
