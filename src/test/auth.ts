@@ -161,15 +161,26 @@ describe('Authentication', () => {
         httpAssert.expectStatusCode(response, 400);
     });
 
-    it('Should expire issued tokens', async () => {
-        let previousExp = nconf.get('accessTokenExpirationSeconds');
-        nconf.set('accessTokenExpirationSeconds', 1);
-        await api.reset();
-        nconf.set('accessTokenExpirationSeconds', previousExp);
-        const http = await api.defaultAdminClient();
-        await delay(1100);
+    describe('Token expiration', async() => {
+        before(async() => {
+            nconf.remove('defaults');
+            nconf.remove('file');
+            nconf.remove('testconfig');
+            nconf.use('token_expiration_override', { type: 'literal', store: { 'accessTokenExpirationSeconds': 1 }});
+            await api.reset();
+        });
 
-        const response = await http.getJson(urls.tenants());
-        httpAssert.expectStatusCode(response, 401);
-    });
+        after(async() => {
+            nconf.remove('token_expiration_override');
+        });
+
+        it('Should expire issued tokens', async () => {
+            const http = await api.defaultAdminClient();
+            await delay(1100);
+
+            const response = await http.getJson(urls.tenants());
+            httpAssert.expectStatusCode(response, 401);
+        });
+    })
+
 });

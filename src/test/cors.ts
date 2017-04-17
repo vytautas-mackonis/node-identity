@@ -21,7 +21,10 @@ describe('CORS', () => {
             let password = uuid.v4();
 
             before(async () => {
-                nconf.set('allowedOrigin', allowedOrigins);
+                nconf.remove('defaults');
+                nconf.remove('file');
+                nconf.remove('testconfig');
+                nconf.use('cors_test_override', { type: 'literal', store: { 'allowedOrigin': allowedOrigins }});
                 await api.reset();
 
                 http = await api.defaultAdminClient();
@@ -36,6 +39,10 @@ describe('CORS', () => {
                 });
                 httpAssert.expectStatusCode(response, 200);
                 http = await api.authenticatedClient(user.login, password, client.id, uuid.v4());
+            });
+
+            after(async () => {
+                nconf.remove('cors_test_override');
             });
 
             function assertPreflightTokenCorsRequestAllowed(origin) {
@@ -202,7 +209,10 @@ describe('CORS', () => {
             let password = uuid.v4();
 
             before(async () => {
-                nconf.set('allowedOrigin', '*');
+                nconf.remove('defaults');
+                nconf.remove('file');
+                nconf.remove('testconfig');
+                nconf.use('cors_test_override', { type: 'literal', store: { 'allowedOrigin': allowedOrigins }});
                 await api.reset();
                 http = await api.defaultAdminClient();
 
@@ -217,6 +227,10 @@ describe('CORS', () => {
                 });
                 httpAssert.expectStatusCode(response, 200);
                 http = await api.authenticatedClient(user.login, password, client.id, 'anything');
+            });
+
+            after(async () => {
+                nconf.remove('cors_test_override');
             });
 
             it('Should be able to login using this client with any secret', async () => {

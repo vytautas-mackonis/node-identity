@@ -13,26 +13,20 @@ import { ExpressOAuthServer } from './express-oauth2';
 import { corsHandler } from './cors';
 import { JwtTokenProvider } from './jwt';
 
-
-let configured = false;
 let server = null;
 
 export async function start() {
-    if (!configured) {
-        configured = true;
-                
-        nconf.argv();
-        nconf.file('conf/config.json');
+    nconf.argv();
+    nconf.file('conf/config.json');
 
-        nconf.defaults({
-            port: 3000,
-            allowedOrigin: '*',
-            argon2TimeCost: 3,
-            argon2MemoryCost: 14,
-            argon2Parallelism: 1,
-            accessTokenExpirationSeconds: 10 * 60
-        });
-    }
+    nconf.defaults({
+        port: 3000,
+        allowedOrigin: '*',
+        argon2TimeCost: 3,
+        argon2MemoryCost: 14,
+        argon2Parallelism: 1,
+        accessTokenExpirationSeconds: 10 * 60
+    });
 
     const mongoDbUrl = `mongodb://${nconf.get('mongoHost')}:${nconf.get('mongoPort')}/${nconf.get('mongoDatabase')}`;
     const persistence = await MongoOAuthPersistenceFactory.create(mongoDbUrl);

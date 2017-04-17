@@ -12,6 +12,7 @@ let db: Db;
 export async function start() {
     nconf.env();
     nconf.file('testconfig', 'conf/config_test.json');
+    nconf.file('conf/config.json');
     await server.start();
     const dbUrl = `mongodb://${nconf.get('mongoHost')}:${nconf.get('mongoPort')}/${nconf.get('mongoDatabase')}`;
     db = await MongoClient.connect(dbUrl);
@@ -19,6 +20,9 @@ export async function start() {
 
 export async function reset() {
     server.stop();
+    nconf.env();
+    nconf.file('testconfig', 'conf/config_test.json');
+    nconf.file('conf/config.json');
     await db.dropDatabase();
     await server.start();
 }
