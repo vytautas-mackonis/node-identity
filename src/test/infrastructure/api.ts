@@ -47,6 +47,17 @@ export async function login(username: string, password: string, clientId: string
     return response;
 }
 
+export async function refreshToken(token: string, clientId: string, clientSecret: string) {
+    let client = anonymousClient();
+    let response = await client.postFormData(urls.token(), {
+        grant_type: 'refresh_token',
+        refresh_token: token,
+        client_id: clientId,
+        client_secret: clientSecret
+    });
+    return response;
+}
+
 export async function authenticatedClient(username: string, password: string, clientId: string, clientSecret: string) {
     let response = await login(username, password, clientId, clientSecret);
     httpAssert.expectStatusCode(response, 200);
